@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package my.jogoDaVelha;
+package br.senai.application;
 
+import br.senai.util.soLetras;
 import java.awt.Toolkit;
 import javax.swing.JOptionPane;
 
@@ -40,7 +41,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         txf_NomeJ2 = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        cbx_rodadas = new javax.swing.JComboBox<>();
+        cbx_rodadas = new javax.swing.JComboBox<String>();
         btn_Voltar = new javax.swing.JButton();
         btn_OK = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
@@ -83,7 +84,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
 
         jLabel4.setText("Quantidade de rodadas:");
 
-        cbx_rodadas.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<Selecione a quantidade>", "1", "3", "5", "7", "9" }));
+        cbx_rodadas.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<Selecione a quantidade>", "1", "3", "5", "7", "9" }));
 
         btn_Voltar.setText("Voltar");
         btn_Voltar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -101,7 +102,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
             }
         });
 
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/config.png"))); // NOI18N
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/config.png"))); // NOI18N
 
         XouO.add(radX);
         radX.setText("X");
@@ -111,7 +112,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
 
         jLabel5.setText("Simbolo do jogador 1:");
 
-        dica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/Yoda.png"))); // NOI18N
+        dica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/Yoda.png"))); // NOI18N
         dica.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -151,7 +152,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(140, 140, 140)
+                        .addGap(143, 143, 143)
                         .addComponent(dica)
                         .addGap(22, 22, 22))))
         );

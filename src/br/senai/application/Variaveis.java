@@ -1,6 +1,6 @@
-package my.jogoDaVelha;
+package br.senai.application;
 
-import static my.jogoDaVelha.telaJogo.Mresultado;
+import static br.senai.application.telaJogo.Mresultado;
 
 public class Variaveis {
     static int auxm;

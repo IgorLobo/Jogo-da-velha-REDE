@@ -1,4 +1,4 @@
-package my.jogoDaVelha;
+package br.senai.application;
 
 import java.awt.AWTEvent;
 import java.awt.Color;
@@ -16,7 +16,7 @@ import static java.awt.event.KeyEvent.VK_NUMPAD8;
 import static java.awt.event.KeyEvent.VK_NUMPAD9;
 import static java.awt.event.KeyEvent.VK_SPACE;
 import javax.swing.JOptionPane;
-import static my.jogoDaVelha.Variaveis.rodadas;
+import static br.senai.application.Variaveis.rodadas;
 
 /**
  * @author Hygor
@@ -530,11 +530,11 @@ public class telaJogo extends javax.swing.JFrame {
         JL_J1.setText("Jogador 1:");
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/Coin.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/Coin.png"))); // NOI18N
         jLabel1.setText("Pontos:");
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/crown (1).png"))); // NOI18N
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/crown.png"))); // NOI18N
         jLabel2.setText("Vitórias:");
 
         JL_vitoriasJ1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
@@ -546,14 +546,14 @@ public class telaJogo extends javax.swing.JFrame {
         JL_pontosJ1.setText("0");
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/Coin.png"))); // NOI18N
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/Coin.png"))); // NOI18N
         jLabel3.setText("Pontos:");
 
         JL_pontosJ2.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         JL_pontosJ2.setText("0");
 
         jLabel6.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/crown (1).png"))); // NOI18N
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/crown.png"))); // NOI18N
         jLabel6.setText("Vitórias:");
 
         JL_vitoriasJ2.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
@@ -740,7 +740,7 @@ public class telaJogo extends javax.swing.JFrame {
 
         JL_vez.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
 
-        Dica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/Yoda.png"))); // NOI18N
+        Dica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/Yoda.png"))); // NOI18N
         Dica.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         JL_vezSimbolo.setFont(new java.awt.Font("Chiller", 1, 36)); // NOI18N

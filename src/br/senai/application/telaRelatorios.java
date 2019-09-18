@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package my.jogoDaVelha;
+package br.senai.application;
 
 import java.awt.Toolkit;
 
@@ -82,9 +82,7 @@ public class telaRelatorios extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Relatórios");
-        setMaximumSize(new java.awt.Dimension(10000, 10000));
         setMinimumSize(new java.awt.Dimension(614, 530));
-        setPreferredSize(new java.awt.Dimension(614, 530));
         setResizable(false);
         setSize(new java.awt.Dimension(614, 530));
 

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package my.jogoDaVelha;
+package br.senai.application;
 
 import java.awt.Toolkit;
 
@@ -18,7 +18,7 @@ public class telaCreditos extends javax.swing.JFrame {
      */
     public telaCreditos() {
         initComponents();
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("launcher.png")));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/br/senai/images/launcher.png")));
     }
 
     /**
@@ -42,7 +42,7 @@ public class telaCreditos extends javax.swing.JFrame {
         setTitle("Dev");
         setResizable(false);
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/dev.png"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/dev.png"))); // NOI18N
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jLabel2.setText("Contato:");

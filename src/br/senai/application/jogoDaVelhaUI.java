@@ -3,8 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package my.jogoDaVelha;
-
+package br.senai.application;
 
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
@@ -61,7 +60,7 @@ public class jogoDaVelhaUI extends javax.swing.JFrame {
             }
         });
 
-        Logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/my/jogoDaVelha/Imagens/LOGO.jpg.png"))); // NOI18N
+        Logo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/LOGO.jpg.png"))); // NOI18N
 
         jButton1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
         jButton1.setText("Como jogar");
@@ -147,7 +146,7 @@ public class jogoDaVelhaUI extends javax.swing.JFrame {
         try {
             PlasticLookAndFeel.setPlasticTheme(new ExperienceBlue());
             try {
-                      UIManager.setLookAndFeel("com.jgoodies.looks.plastic.Plastic3DLookAndFeel");
+                      UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticLookAndFeel");
                   } catch (InstantiationException ex) {
                       Logger.getLogger(jogoDaVelhaUI.class.getName()).log(Level.SEVERE, null, ex);
                   } catch (IllegalAccessException ex) {
@@ -177,6 +176,6 @@ public class jogoDaVelhaUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton2;
     // End of variables declaration//GEN-END:variables
 public void setIcon() {
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("launcher.png")));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/br/senai/images/launcher.png")));
     }
 }

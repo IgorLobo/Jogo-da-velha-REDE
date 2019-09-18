@@ -378,7 +378,7 @@
                   <Font name="Tahoma" size="12" style="0"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/my/jogoDaVelha/Imagens/Coin.png"/>
+                  <Image iconType="3" name="/br/senai/images/Coin.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Pontos:"/>
               </Properties>
@@ -389,7 +389,7 @@
                   <Font name="Tahoma" size="12" style="0"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/my/jogoDaVelha/Imagens/crown (1).png"/>
+                  <Image iconType="3" name="/br/senai/images/crown.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Vit&#xf3;rias:"/>
               </Properties>
@@ -418,7 +418,7 @@
                   <Font name="Tahoma" size="12" style="0"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/my/jogoDaVelha/Imagens/Coin.png"/>
+                  <Image iconType="3" name="/br/senai/images/Coin.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Pontos:"/>
               </Properties>
@@ -437,7 +437,7 @@
                   <Font name="Tahoma" size="12" style="0"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/my/jogoDaVelha/Imagens/crown (1).png"/>
+                  <Image iconType="3" name="/br/senai/images/crown.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Vit&#xf3;rias:"/>
               </Properties>
@@ -698,7 +698,7 @@
         <Component class="javax.swing.JLabel" name="Dica">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/my/jogoDaVelha/Imagens/Yoda.png"/>
+              <Image iconType="3" name="/br/senai/images/Yoda.png"/>
             </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
