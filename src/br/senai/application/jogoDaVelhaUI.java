@@ -5,15 +5,13 @@
  */
 package br.senai.application;
 
+import br.senai.util.JFrameUtil;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 import com.jgoodies.looks.plastic.theme.ExperienceBlue;
-import java.awt.Toolkit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-
-
 
 /**
  *
@@ -27,12 +25,8 @@ public class jogoDaVelhaUI extends javax.swing.JFrame {
     public jogoDaVelhaUI() {
         initComponents();
         this.setResizable(false);
-        setIcon();
+        JFrameUtil.getInstance().setIcon(this);
     }
-  
-  
-    
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -146,15 +140,14 @@ public class jogoDaVelhaUI extends javax.swing.JFrame {
         try {
             PlasticLookAndFeel.setPlasticTheme(new ExperienceBlue());
             try {
-                      UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticLookAndFeel");
-                  } catch (InstantiationException ex) {
-                      Logger.getLogger(jogoDaVelhaUI.class.getName()).log(Level.SEVERE, null, ex);
-                  } catch (IllegalAccessException ex) {
-                      Logger.getLogger(jogoDaVelhaUI.class.getName()).log(Level.SEVERE, null, ex);
-                  } catch (UnsupportedLookAndFeelException ex) {
-                      Logger.getLogger(jogoDaVelhaUI.class.getName()).log(Level.SEVERE, null, ex);
-                  }
-           
+                UIManager.setLookAndFeel("com.jgoodies.looks.plastic.PlasticLookAndFeel");
+            } catch (InstantiationException ex) {
+                Logger.getLogger(jogoDaVelhaUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(jogoDaVelhaUI.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedLookAndFeelException ex) {
+                Logger.getLogger(jogoDaVelhaUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
         } catch (ClassNotFoundException ex) {
             ex.printStackTrace();
@@ -175,7 +168,5 @@ public class jogoDaVelhaUI extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     // End of variables declaration//GEN-END:variables
-public void setIcon() {
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/br/senai/images/launcher.png")));
-    }
+
 }

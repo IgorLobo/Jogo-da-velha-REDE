@@ -5,6 +5,7 @@
  */
 package br.senai.application;
 
+import br.senai.util.JFrameUtil;
 import java.awt.Toolkit;
 
 /**
@@ -18,7 +19,7 @@ public class telaCreditos extends javax.swing.JFrame {
      */
     public telaCreditos() {
         initComponents();
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/br/senai/images/launcher.png")));
+        JFrameUtil.getInstance().setIcon(this);
     }
 
     /**

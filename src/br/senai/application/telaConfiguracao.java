@@ -5,8 +5,8 @@
  */
 package br.senai.application;
 
+import br.senai.util.JFrameUtil;
 import br.senai.util.soLetras;
-import java.awt.Toolkit;
 import javax.swing.JOptionPane;
 
 /**
@@ -19,7 +19,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
 
     public telaConfiguracao() {
         initComponents();
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("launcher.png")));
+        JFrameUtil.getInstance().setIcon(this);
         txf_NomeJ1.setDocument(new soLetras());
         txf_NomeJ2.setDocument(new soLetras());
         dica.setToolTipText("<html><b>Dica:</b> Você pode ou não colocar nome de jogador! <html>");

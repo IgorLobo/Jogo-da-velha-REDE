@@ -5,6 +5,7 @@
  */
 package br.senai.application;
 
+import br.senai.util.JFrameUtil;
 import java.awt.Toolkit;
 
 /**
@@ -18,33 +19,33 @@ public class telaRelatorios extends javax.swing.JFrame {
      */
     public telaRelatorios() {
         initComponents();
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("launcher.png")));
+        JFrameUtil.getInstance().setIcon(this);
         JL_matrizA1.setText(String.format("<html><tr>%s</tr><br><tr>%s</tr></html>", Variaveis.matA1, Variaveis.matA2));
-        
+
         JL_matrizB1.setText(String.format("<html><tr>%s</tr><br><tr>%s</tr></html>", Variaveis.matB1, Variaveis.matB2));
-        
+
         JL_matrizC1.setText(String.format("<html><tr><td><center>%s</center></td><td><center>%s</center></td></tr></html>", Variaveis.matC1, Variaveis.matC2));
-        
+
         JL_matrizD1.setText(String.format("<html><tr>%s</tr><br><tr>%s</tr></html>", Variaveis.matD1, Variaveis.matD2));
-        
+
         JL_matrizE1.setText(String.format("<html><tr>%s</tr><br><tr>%s</tr></html>", Variaveis.matE1, Variaveis.matE2));
-        
+
         JL_matrizF1.setText(String.format("<html><tr>%s</tr><br><tr>%s</tr></html>", Variaveis.matF1, Variaveis.matF2));
-        
+
         JL_somatorio.setText(Integer.toString(Variaveis.Msoma));
-        
+
         JL_VarB1.setText(Variaveis.resultadoBin);
-        
+
         StringBuffer sbOct = new StringBuffer(Variaveis.resultadoOctal);
         StringBuffer sbOct1 = sbOct.reverse();
         String sbOctF = new String(sbOct1);
         JL_varO1.setText(sbOctF);
-        
+
         StringBuffer sbHex = new StringBuffer(Variaveis.resultadoHex);
         StringBuffer sbHex1 = sbHex.reverse();
         String sbHexF = new String(sbHex1);
         JL_varH1.setText(sbHexF);
-        
+
     }
 
     /**
@@ -268,7 +269,7 @@ public class telaRelatorios extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btn_voltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_voltarActionPerformed
-        
+
         this.dispose();
     }//GEN-LAST:event_btn_voltarActionPerformed
 

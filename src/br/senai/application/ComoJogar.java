@@ -5,6 +5,7 @@
  */
 package br.senai.application;
 
+import br.senai.util.JFrameUtil;
 import java.awt.Toolkit;
 
 /**
@@ -19,8 +20,7 @@ public class ComoJogar extends javax.swing.JFrame {
     public ComoJogar() {
         initComponents();
         instrucoes();
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("launcher.png")));
-        
+        JFrameUtil.getInstance().setIcon(this);
     }
     public void instrucoes(){
         instrucoes.setText("<html><tr><td align=justify> <b>Objetivo do jogo:</b> Ser o primeiro a fazer uma sequência de três símbolos iguais, seja em uma linha, coluna ou diagonal.<br>"

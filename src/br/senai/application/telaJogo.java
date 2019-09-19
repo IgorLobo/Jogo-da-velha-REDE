@@ -17,6 +17,7 @@ import static java.awt.event.KeyEvent.VK_NUMPAD9;
 import static java.awt.event.KeyEvent.VK_SPACE;
 import javax.swing.JOptionPane;
 import static br.senai.application.Variaveis.rodadas;
+import br.senai.util.JFrameUtil;
 
 /**
  * @author Hygor
@@ -52,7 +53,7 @@ public class telaJogo extends javax.swing.JFrame {
     public telaJogo() {
         initComponents();
         IniciarCampos();
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("launcher.png")));
+        JFrameUtil.getInstance().setIcon(this);
         Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
             @Override
             public void eventDispatched(AWTEvent event) {
@@ -292,11 +293,11 @@ public class telaJogo extends javax.swing.JFrame {
             M8.setEnabled(false);
             M9.setEnabled(false);
             btn_Relatorios.setEnabled(true);
-            if (Integer.parseInt(JL_pontosJ1.getText()) > Integer.parseInt(JL_pontosJ2.getText()) ) {
-                JOptionPane.showMessageDialog(null, "Parabéns " + Variaveis.nJ1 +",  você ganhou!!");
-            }else if (Integer.parseInt(JL_pontosJ2.getText()) > Integer.parseInt(JL_pontosJ1.getText()) ) {
-                JOptionPane.showMessageDialog(null, "Parabéns " + Variaveis.nJ2 +",  você ganhou!!");
-            }else if (Integer.parseInt(JL_pontosJ1.getText()) == Integer.parseInt(JL_pontosJ2.getText()) ) {
+            if (Integer.parseInt(JL_pontosJ1.getText()) > Integer.parseInt(JL_pontosJ2.getText())) {
+                JOptionPane.showMessageDialog(null, "Parabéns " + Variaveis.nJ1 + ",  você ganhou!!");
+            } else if (Integer.parseInt(JL_pontosJ2.getText()) > Integer.parseInt(JL_pontosJ1.getText())) {
+                JOptionPane.showMessageDialog(null, "Parabéns " + Variaveis.nJ2 + ",  você ganhou!!");
+            } else if (Integer.parseInt(JL_pontosJ1.getText()) == Integer.parseInt(JL_pontosJ2.getText())) {
                 JOptionPane.showMessageDialog(null, "Empate!!");
             }
         }
@@ -317,7 +318,7 @@ public class telaJogo extends javax.swing.JFrame {
         if (jogadorAtivo1 == true) {
             JL_vez.setText(Variaveis.nJ1);
             JL_vezSimbolo.setText(Variaveis.simboloJ1);
-        }else if (jogadorAtivo2 == true) {
+        } else if (jogadorAtivo2 == true) {
             JL_vez.setText(Variaveis.nJ2);
             JL_vezSimbolo.setText(Variaveis.simboloJ2);
         }
