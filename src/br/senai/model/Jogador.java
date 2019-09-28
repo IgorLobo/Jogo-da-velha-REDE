@@ -5,6 +5,8 @@ public class Jogador {
     private String apelido = "";
     private int pontos = 0;
     private int vitorias = 0;
+    private Simbolo simbolo = null;
+
 
     public Jogador() {
     }
@@ -21,6 +23,14 @@ public class Jogador {
         this.apelido = apelido;
     }
 
+    public Simbolo getSimbolo() {
+        return simbolo;
+    }
+
+    public void setSimbolo(Simbolo simbolo) {
+        this.simbolo = simbolo;
+    }
+    
     public int getPontos() {
         return pontos;
     }
@@ -30,7 +40,7 @@ public class Jogador {
     }
 
     public void adicionarPonto(int ponto) {
-        this.pontos += pontos;
+        this.pontos += ponto;
     }
 
     public void adicionarVitoria(int vitoria) {

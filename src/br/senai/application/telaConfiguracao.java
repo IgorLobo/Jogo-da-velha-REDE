@@ -5,6 +5,9 @@
  */
 package br.senai.application;
 
+import br.senai.model.GameConfig;
+import br.senai.model.Jogador;
+import br.senai.model.Simbolo;
 import br.senai.util.JFrameUtil;
 import br.senai.util.soLetras;
 import javax.swing.JOptionPane;
@@ -229,32 +232,28 @@ public class telaConfiguracao extends javax.swing.JFrame {
     }//GEN-LAST:event_btn_VoltarActionPerformed
 
     private void btn_OKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_OKActionPerformed
-        if (cbx_rodadas.getSelectedItem().equals("<Selecione a quantidade>")) {
-            JOptionPane.showMessageDialog(null, "Selecione quantas rodadas deseja!", "Atenção!", JOptionPane.ERROR_MESSAGE);
-        } else if (!txf_NomeJ1.getText().isEmpty() && !txf_NomeJ2.getText().isEmpty() && txf_NomeJ1.getText().equals(txf_NomeJ2.getText())) {
-
-            JOptionPane.showMessageDialog(null, "Coloque nomes diferentes para cada jogador!", "Atenção!", JOptionPane.ERROR_MESSAGE);
-        } else if (radO.isSelected() == false && radX.isSelected() == false) {
-            JOptionPane.showMessageDialog(null, "Selecione qual simbolo o jogador 1 utilizará!", "Atenção", JOptionPane.ERROR_MESSAGE);
-        } else {
+        if (validarCampos()) {
+            //SETAR APELIDOS
             if (txf_NomeJ1.getText().isEmpty()) {
-                Variaveis.nJ1 = "Jogador 1";
+                GameConfig.getInstance().getJogador1().setApelido("Jogador 1");
             } else {
-                Variaveis.nJ1 = txf_NomeJ1.getText();
+                GameConfig.getInstance().getJogador1().setApelido(txf_NomeJ1.getText());
             }
             if (txf_NomeJ2.getText().isEmpty()) {
-                Variaveis.nJ2 = "Jogador 2";
+                GameConfig.getInstance().getJogador2().setApelido("Jogador 2");
             } else {
-                Variaveis.nJ2 = txf_NomeJ2.getText();
+                GameConfig.getInstance().getJogador2().setApelido(txf_NomeJ2.getText());
             }
+            
             if (radX.isSelected()) {
-                Variaveis.simboloJ1 = "X";
-                Variaveis.simboloJ2 = "O";
+               GameConfig.getInstance().getJogador1().setSimbolo(Simbolo.X);
+               GameConfig.getInstance().getJogador2().setSimbolo(Simbolo.O);
             } else if (radO.isSelected()) {
-                Variaveis.simboloJ1 = "O";
-                Variaveis.simboloJ2 = "X";
+               GameConfig.getInstance().getJogador1().setSimbolo(Simbolo.O);
+               GameConfig.getInstance().getJogador2().setSimbolo(Simbolo.X);
             }
-            Variaveis.rodadas = Integer.parseInt(cbx_rodadas.getSelectedItem().toString());
+            
+            GameConfig.getInstance().setRodadas(Integer.parseInt(cbx_rodadas.getSelectedItem().toString()));
             telaJogo jpJogo = new telaJogo();
             this.dispose();
             jpJogo.setVisible(true);
@@ -334,4 +333,18 @@ public class telaConfiguracao extends javax.swing.JFrame {
     private javax.swing.JTextField txf_NomeJ2;
     // End of variables declaration//GEN-END:variables
 
+    private boolean validarCampos() {
+        if (cbx_rodadas.getSelectedItem().equals("<Selecione a quantidade>")) {
+            JOptionPane.showMessageDialog(null, "Selecione quantas rodadas deseja!", "Atenção!", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (!txf_NomeJ1.getText().isEmpty() && !txf_NomeJ2.getText().isEmpty() && txf_NomeJ1.getText().equals(txf_NomeJ2.getText())) {
+            JOptionPane.showMessageDialog(null, "Coloque nomes diferentes para cada jogador!", "Atenção!", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } else if (radO.isSelected() == false && radX.isSelected() == false) {
+            JOptionPane.showMessageDialog(null, "Selecione qual simbolo o jogador 1 utilizará!", "Atenção", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        return true;
+    }
 }
