@@ -3,6 +3,7 @@ package br.senai.application;
 import br.senai.model.GameConfig;
 import br.senai.model.Jogador;
 import br.senai.model.Simbolo;
+import br.senai.util.EscutaUDP;
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Toolkit;
@@ -20,6 +21,18 @@ import static java.awt.event.KeyEvent.VK_NUMPAD9;
 import static java.awt.event.KeyEvent.VK_SPACE;
 import javax.swing.JOptionPane;
 import br.senai.util.JFrameUtil;
+import java.awt.Container;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Enumeration;
+import javax.swing.DefaultListModel;
+import javax.swing.JFrame;
 
 /**
  * @author Hygor
@@ -27,6 +40,8 @@ import br.senai.util.JFrameUtil;
  */
 public class telaJogo extends javax.swing.JFrame {
 
+    private boolean estaEscutando;
+    private EscutaUDP udpEscutaThread; // thread para leitura da porta UDP
     int rodadas = 1;
     int jogadas = 0;
     boolean ganhador = false;
@@ -98,6 +113,37 @@ public class telaJogo extends javax.swing.JFrame {
         btn_NovoJogo.setToolTipText("Cria um novo jogo! :)");
         Dica.setToolTipText("<html><b>Dica:</b> Você pode jogar pelo teclado numérico também!<html>");
 
+        // Coletar e mostrar interfaces de rede cadastradas
+        try {
+            Enumeration<NetworkInterface> nets
+                    = NetworkInterface.getNetworkInterfaces();
+            for (NetworkInterface netint : Collections.list(nets)) {
+                // descarta interfaces virtuais e loopback (127.0.0.1)
+                if (netint.isVirtual() || netint.isLoopback()) {
+                    continue;
+                }
+
+                // endereços associados à interface
+                Enumeration<InetAddress> inetAddresses
+                        = netint.getInetAddresses();
+                if (inetAddresses.hasMoreElements()) {
+                    for (InetAddress inetAddress
+                            : Collections.list(inetAddresses)) {
+                        if ((inetAddress instanceof Inet4Address)
+                                && inetAddress.isSiteLocalAddress()) {
+                            interfacesJCombo.addItem(
+                                    inetAddress.getHostAddress()
+                                    + " - " + netint.getDisplayName());
+                        }
+                    }
+                }
+            }
+        } catch (SocketException ex) {
+        }
+
+        estaEscutando = false;
+        DefaultListModel<String> model = new DefaultListModel<String>();
+        lstMensagens.setModel(model);
     }
 
     public void TrocarVez() {//******PASSA A VEZ DOS JOGADORES****************
@@ -122,7 +168,7 @@ public class telaJogo extends javax.swing.JFrame {
             Limpar();
         }
 
-            Atualizar();
+        Atualizar();
     }
 
     public void TestarGanhador(Simbolo simbolo) {//******Teste ganhador***********
@@ -183,7 +229,7 @@ public class telaJogo extends javax.swing.JFrame {
 
     public void MostrarGanhador(Simbolo simbolo) {//**********************
         Jogador jogadorVencedor = GameConfig.getInstance().getJogador(simbolo);
-            ganhador = true;
+        ganhador = true;
         if (jogadorVencedor != null) {
             simboloDaVez = jogadorVencedor.getSimbolo();
             jogadorVencedor.adicionarPonto(5);
@@ -260,10 +306,120 @@ public class telaJogo extends javax.swing.JFrame {
         JL_vitoriasJ1.setText(Integer.toString(GameConfig.getInstance().getJogador1().getVitorias()));
         JL_pontosJ2.setText(Integer.toString(GameConfig.getInstance().getJogador2().getPontos()));
         JL_vitoriasJ2.setText(Integer.toString(GameConfig.getInstance().getJogador2().getVitorias()));
-        
+
         Jogador jogadorDaVez = GameConfig.getInstance().getJogador(simboloDaVez);
         JL_vez.setText(jogadorDaVez.getApelido());
         JL_vezSimbolo.setText(jogadorDaVez.getSimbolo().simbolo);
+    }
+
+    private void encerraPrograma() {
+        // encerra o programa
+        Container frame = btn_Encerrar.getParent();
+        do {
+            frame = frame.getParent();
+        } while (!(frame instanceof JFrame));
+        ((JFrame) frame).dispose();
+    }
+
+    private void escutaPortaUDP() {
+        // verifica se usuário indicou a porta
+        // verifica se usuário forneceu uma porta válida
+        int porta = 0;
+        if (tryParseInt(txtRecebePorta.getText())) {
+            porta = Integer.parseInt(txtRecebePorta.getText());
+        }
+
+        if (porta < 1024) {
+            txtRecebePorta.requestFocus();
+            return;
+        }
+
+        // verifica se usuário escolheu a interface
+        int nInterface = interfacesJCombo.getSelectedIndex();
+        if (nInterface < 0) {
+            interfacesJCombo.requestFocus();
+            return;
+        }
+
+        // obtem endereço da interface de rede selecionada
+        InetAddress addrLocal = obtemInterfaceRede();
+        if (addrLocal == null) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro na obtenção da interface escolhida.",
+                    "Envia/Recebe mensagens via UDP",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // cria thread para leitura da porta UDP
+        try {
+            udpEscutaThread = new EscutaUDP(this, porta, addrLocal);
+            mostraMensagem("", "", 0,
+                    "Escutando porta " + txtRecebePorta.getText());
+        } catch (SocketException ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro na criação do thread de leitura da porta " + porta
+                    + ".\n" + ex.getMessage(),
+                    "Envia/Recebe mensagens via UDP",
+                    JOptionPane.ERROR_MESSAGE);
+            encerraPrograma();
+            return;
+        }
+
+        // habilita/desabilita controles
+        btnEscutar.setText("Parar");
+        txtRecebePorta.setEnabled(false);
+        estaEscutando = true;
+
+        // executa thread de leitura da porta UDP
+        udpEscutaThread.execute();
+    }//GEN-LAST:event_btnEscutarActionPerformed
+
+    public void mostraMensagemRecebida(String endereco, int porta, String conteudo) {
+        mostraMensagem("R", endereco, porta, conteudo);
+    }
+
+    public void mostraMensagem(String prefixo, String endereco, int porta, String conteudo) {
+        String msg;
+        if (prefixo.isEmpty()) {
+            msg = "";
+        } else {
+            msg = prefixo + " [" + endereco + ":"
+                    + (porta > 0 ? String.valueOf(porta) : "") + "] ";
+        }
+
+        msg += conteudo;
+
+        ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
+    }
+
+    private InetAddress obtemInterfaceRede() {
+        // verifica se usuário escolheu a interface
+        int nInterface = interfacesJCombo.getSelectedIndex();
+        if (nInterface < 0) {
+            return null;
+        }
+
+        // obtem interface selecionada pelo usuário
+        String str = interfacesJCombo.getItemAt(nInterface);
+        String[] strParts = str.split(" - ");
+        InetAddress addr;
+        try {
+            addr = InetAddress.getByName(strParts[0]);
+        } catch (UnknownHostException ex) {
+            return null;
+        }
+
+        return addr;
+    }
+
+    private boolean tryParseInt(String valor) {
+        try {
+            Integer.parseInt(valor);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -292,21 +448,39 @@ public class telaJogo extends javax.swing.JFrame {
         JL_vitoriasJ2 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         JL_J2 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        btn_Voltar = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         JL_jogadas = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        JL_Rodada = new javax.swing.JLabel();
-        btn_NovoJogo = new javax.swing.JButton();
-        jLabel11 = new javax.swing.JLabel();
-        JL_totalRodadas = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         JL_Empates = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        JL_vez = new javax.swing.JLabel();
-        Dica = new javax.swing.JLabel();
         JL_vezSimbolo = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        JL_Rodada = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        JL_totalRodadas = new javax.swing.JLabel();
+        JL_vez = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        btn_Voltar = new javax.swing.JButton();
+        btn_NovoJogo = new javax.swing.JButton();
+        Dica = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        txtDestino = new javax.swing.JTextField();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        txtEnviaPorta = new javax.swing.JTextField();
+        btnEnviar = new javax.swing.JButton();
+        jLabel12 = new javax.swing.JLabel();
+        txtMensagem = new javax.swing.JTextField();
+        jPanel1 = new javax.swing.JPanel();
+        btnEscutar = new javax.swing.JButton();
+        jLabel13 = new javax.swing.JLabel();
+        txtRecebePorta = new javax.swing.JTextField();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        lstMensagens = new javax.swing.JList<>();
+        jLabel14 = new javax.swing.JLabel();
+        interfacesJCombo = new javax.swing.JComboBox<>();
+        btn_Encerrar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Jogo da Velha");
@@ -462,8 +636,8 @@ public class telaJogo extends javax.swing.JFrame {
         );
         jp_jogadoresLayout.setVerticalGroup(
             jp_jogadoresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jp_jogadoresLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(jp_jogadoresLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jp_jogadoresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jp_jogadoresLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(jp_jogadoresLayout.createSequentialGroup()
@@ -487,8 +661,40 @@ public class telaJogo extends javax.swing.JFrame {
                                     .addComponent(JL_vitoriasJ2)))
                             .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(JL_J1))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel5.setText("Jogadas:");
+
+        JL_jogadas.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        JL_jogadas.setText("0");
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel4.setText("Empates:");
+
+        JL_Empates.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        JL_Empates.setText("0");
+
+        jLabel8.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel8.setText("Quem joga agora:");
+
+        JL_vezSimbolo.setFont(new java.awt.Font("Chiller", 1, 20)); // NOI18N
+        JL_vezSimbolo.setText("X");
+
+        jLabel7.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel7.setText("Rodada:");
+
+        JL_Rodada.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        JL_Rodada.setText("0");
+
+        jLabel11.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel11.setText("/");
+
+        JL_totalRodadas.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        JL_totalRodadas.setText("0");
+
+        JL_vez.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
 
         javax.swing.GroupLayout jp_jogoLayout = new javax.swing.GroupLayout(jp_jogo);
         jp_jogo.setLayout(jp_jogoLayout);
@@ -496,28 +702,57 @@ public class telaJogo extends javax.swing.JFrame {
             jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jp_jogoLayout.createSequentialGroup()
                 .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jp_jogadores, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jp_jogoLayout.createSequentialGroup()
                         .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jp_jogoLayout.createSequentialGroup()
-                                .addComponent(M4, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(M5, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(M6, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jp_jogoLayout.createSequentialGroup()
                                 .addComponent(M1, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(M2, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(M3, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jp_jogoLayout.createSequentialGroup()
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jp_jogoLayout.createSequentialGroup()
                                 .addComponent(M7, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(M8, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(M9, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jp_jogadores, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jp_jogoLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jp_jogoLayout.createSequentialGroup()
+                                .addComponent(jLabel8)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(JL_vezSimbolo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jp_jogoLayout.createSequentialGroup()
+                                .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(JL_vez, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addGroup(jp_jogoLayout.createSequentialGroup()
+                                        .addComponent(jLabel5)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(JL_jogadas)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jLabel4)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(JL_Empates)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(jLabel7)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(JL_Rodada)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel11)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(JL_totalRodadas)))
+                                .addGap(12, 12, 12))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jp_jogoLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(M4, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(M5, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(M6, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -526,6 +761,23 @@ public class telaJogo extends javax.swing.JFrame {
         jp_jogoLayout.setVerticalGroup(
             jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jp_jogoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(JL_jogadas)
+                    .addComponent(jLabel7)
+                    .addComponent(JL_Rodada)
+                    .addComponent(jLabel11)
+                    .addComponent(JL_totalRodadas)
+                    .addComponent(jLabel4)
+                    .addComponent(JL_Empates))
+                .addGap(18, 18, 18)
+                .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(JL_vezSimbolo, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(JL_vez, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(M7, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                     .addComponent(M8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -540,9 +792,9 @@ public class telaJogo extends javax.swing.JFrame {
                     .addComponent(M1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(M2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(M3, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jp_jogadores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addGap(55, 55, 55))
         );
 
         jp_jogoLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {M1, M2, M3, M4, M5, M6, M7, M8, M9});
@@ -558,18 +810,6 @@ public class telaJogo extends javax.swing.JFrame {
             }
         });
 
-        jLabel5.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel5.setText("Jogadas:");
-
-        JL_jogadas.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        JL_jogadas.setText("0");
-
-        jLabel7.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel7.setText("Rodada:");
-
-        JL_Rodada.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        JL_Rodada.setText("0");
-
         btn_NovoJogo.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btn_NovoJogo.setText("Novo jogo");
         btn_NovoJogo.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -579,28 +819,131 @@ public class telaJogo extends javax.swing.JFrame {
             }
         });
 
-        jLabel11.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel11.setText("/");
-
-        JL_totalRodadas.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        JL_totalRodadas.setText("0");
-
-        jLabel4.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel4.setText("Empates:");
-
-        JL_Empates.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        JL_Empates.setText("0");
-
-        jLabel8.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        jLabel8.setText("Quem joga agora:");
-
-        JL_vez.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-
         Dica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/Yoda.png"))); // NOI18N
         Dica.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
-        JL_vezSimbolo.setFont(new java.awt.Font("Chiller", 1, 36)); // NOI18N
-        JL_vezSimbolo.setText("X");
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Enviar", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        jLabel9.setText("IP Destino:");
+
+        jLabel10.setText("Porta:");
+
+        btnEnviar.setText("Enviar");
+        btnEnviar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEnviarActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setText("Mensagem:");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap(14, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel12)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel10)
+                            .addGroup(jPanel4Layout.createSequentialGroup()
+                                .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(txtMensagem))
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel9)
+                    .addComponent(jLabel10))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnEnviar))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel12)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtMensagem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(13, Short.MAX_VALUE))
+        );
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Receber", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        btnEscutar.setText("Iniciar");
+        btnEscutar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEscutarActionPerformed(evt);
+            }
+        });
+
+        jLabel13.setText("Porta:");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel13)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(txtRecebePorta)
+                    .addComponent(btnEscutar, javax.swing.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addComponent(jLabel13)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtRecebePorta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnEscutar)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Mensagens Enviadas e Recebidas", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        lstMensagens.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane2.setViewportView(lstMensagens);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        jLabel14.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel14.setText("Interface:");
+
+        btn_Encerrar.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btn_Encerrar.setText("Encerrar");
+        btn_Encerrar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        btn_Encerrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_EncerrarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -609,67 +952,47 @@ public class telaJogo extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btn_NovoJogo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btn_Voltar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addGap(0, 6, Short.MAX_VALUE)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel7))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(JL_Empates)
-                                    .addGroup(jPanel3Layout.createSequentialGroup()
-                                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(JL_Rodada)
-                                            .addComponent(JL_jogadas))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel11)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(JL_totalRodadas)))
-                                .addGap(77, 77, 77))
-                            .addComponent(Dica, javax.swing.GroupLayout.Alignment.TRAILING)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(JL_vezSimbolo, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(JL_vez, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel14)
+                            .addComponent(interfacesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(Dica, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(btn_Voltar, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_NovoJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btn_Encerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(Dica, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jLabel14)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(interfacesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(Dica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(JL_vezSimbolo, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(JL_vez, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(JL_jogadas))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(JL_Rodada)
-                    .addComponent(jLabel11)
-                    .addComponent(JL_totalRodadas))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(JL_Empates))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btn_NovoJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btn_Voltar)
+                    .addComponent(btn_Voltar)
+                    .addComponent(btn_Encerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btn_NovoJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -681,7 +1004,7 @@ public class telaJogo extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jp_jogo, javax.swing.GroupLayout.PREFERRED_SIZE, 359, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jp_jogo, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
@@ -691,7 +1014,7 @@ public class telaJogo extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jp_jogo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                    .addComponent(jp_jogo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -795,6 +1118,90 @@ public class telaJogo extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_btn_NovoJogoActionPerformed
 
+    private void btnEscutarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEscutarActionPerformed
+        if (estaEscutando) {
+            // fecha porta UDP
+            udpEscutaThread.encerraConexao();
+
+            // encerra thread
+            udpEscutaThread.cancel(true);
+
+            // habilita/desabilita controles
+            btnEscutar.setText("Iniciar");
+            txtRecebePorta.setEnabled(true);
+            estaEscutando = false;
+            mostraMensagem("", "", 0,
+                    "Escutando porta " + txtRecebePorta.getText());
+        } else {
+            escutaPortaUDP();
+        }
+    }//GEN-LAST:event_btnEscutarActionPerformed
+
+    private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
+        // verifica se usuário informou todos os parâmetros:
+        // endereço, porta e mensagem
+        String msg = txtMensagem.getText();
+        if (msg.length() == 0) {
+            txtEnviaPorta.requestFocus();
+            return;
+        }
+
+        if (txtDestino.getText().length() == 0) {
+            txtDestino.requestFocus();
+            return;
+        }
+
+        int porta = 0;
+        if (tryParseInt(txtEnviaPorta.getText())) {
+            porta = Integer.parseInt(txtEnviaPorta.getText());
+        }
+
+        if (porta < 1024) {
+            txtEnviaPorta.requestFocus();
+            return;
+        }
+
+        try {
+            // cria endereço para enviar mensagem
+            InetAddress addr = InetAddress.getByName(txtDestino.getText());
+
+            // cria pacote de dados para ser enviado
+            DatagramPacket p = new DatagramPacket(msg.getBytes(),
+                    msg.getBytes().length,
+                    addr, porta);
+
+            // obtem endereço da interface de rede selecionada
+            InetAddress addrLocal = obtemInterfaceRede();
+            if (addrLocal == null) {
+                JOptionPane.showMessageDialog(null,
+                        "Erro na obtenção da interface escolhida.",
+                        "Envia/Recebe mensagens via UDP",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // cria um socket do tipo datagram e
+            // liga-o a qualquer porta disponível
+            DatagramSocket udpSocket = new DatagramSocket(0, addrLocal);
+
+            // envia pacote para o endereço e porta especificados
+            udpSocket.send(p);
+
+            // mostra mensagem enviada
+            mostraMensagem("E", txtDestino.getText(), porta, msg);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro no envio da mensagem.\n Erro: " + ex.getMessage(),
+                    "Envia/Recebe mensagens via UDP",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnEnviarActionPerformed
+
+    private void btn_EncerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_EncerrarActionPerformed
+        encerraPrograma();
+    }//GEN-LAST:event_btn_EncerrarActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -855,10 +1262,18 @@ public class telaJogo extends javax.swing.JFrame {
     public javax.swing.JButton M7;
     public javax.swing.JButton M8;
     public javax.swing.JButton M9;
+    private javax.swing.JButton btnEnviar;
+    private javax.swing.JButton btnEscutar;
+    private javax.swing.JButton btn_Encerrar;
     private javax.swing.JButton btn_NovoJogo;
     private javax.swing.JButton btn_Voltar;
+    private javax.swing.JComboBox<String> interfacesJCombo;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -866,9 +1281,19 @@ public class telaJogo extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel jp_jogadores;
     private javax.swing.JPanel jp_jogo;
+    private javax.swing.JList<String> lstMensagens;
+    private javax.swing.JTextField txtDestino;
+    private javax.swing.JTextField txtEnviaPorta;
+    private javax.swing.JTextField txtMensagem;
+    private javax.swing.JTextField txtRecebePorta;
     // End of variables declaration//GEN-END:variables
 }

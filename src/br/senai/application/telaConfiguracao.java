@@ -24,7 +24,6 @@ public class telaConfiguracao extends javax.swing.JFrame {
         initComponents();
         JFrameUtil.getInstance().setIcon(this);
         txf_NomeJ1.setDocument(new soLetras());
-        txf_NomeJ2.setDocument(new soLetras());
         dica.setToolTipText("<html><b>Dica:</b> Você pode ou não colocar nome de jogador! <html>");
     }
 
@@ -41,10 +40,8 @@ public class telaConfiguracao extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txf_NomeJ1 = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
-        txf_NomeJ2 = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        cbx_rodadas = new javax.swing.JComboBox<String>();
+        cbx_rodadas = new javax.swing.JComboBox<>();
         btn_Voltar = new javax.swing.JButton();
         btn_OK = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
@@ -59,35 +56,17 @@ public class telaConfiguracao extends javax.swing.JFrame {
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Configurar Jogo"));
 
-        jLabel1.setText("Nome do jogador 1:");
+        jLabel1.setText("Nome do jogador local:");
 
-        txf_NomeJ1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txf_NomeJ1ActionPerformed(evt);
-            }
-        });
         txf_NomeJ1.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 txf_NomeJ1KeyTyped(evt);
             }
         });
 
-        jLabel2.setText("Nome do jogador 2:");
-
-        txf_NomeJ2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txf_NomeJ2ActionPerformed(evt);
-            }
-        });
-        txf_NomeJ2.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txf_NomeJ2KeyTyped(evt);
-            }
-        });
-
         jLabel4.setText("Quantidade de rodadas:");
 
-        cbx_rodadas.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<Selecione a quantidade>", "1", "3", "5", "7", "9" }));
+        cbx_rodadas.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<Selecione a quantidade>", "1", "3", "5", "7", "9" }));
 
         btn_Voltar.setText("Voltar");
         btn_Voltar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -125,42 +104,32 @@ public class telaConfiguracao extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(btn_Voltar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btn_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGap(10, 10, 10)
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(radX)
-                                            .addComponent(txf_NomeJ1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(radO)))
-                                    .addComponent(jLabel5))
-                                .addGap(63, 63, 63)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel4)
-                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                        .addGap(10, 10, 10)
-                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(txf_NomeJ2, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(cbx_rodadas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(143, 143, 143)
-                        .addComponent(dica)
-                        .addGap(22, 22, 22))))
+                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                            .addComponent(btn_Voltar)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btn_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                            .addComponent(jLabel1)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jLabel5))
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txf_NomeJ1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addGap(112, 112, 112)
+                                    .addComponent(dica))
+                                .addGroup(jPanel1Layout.createSequentialGroup()
+                                    .addGap(37, 37, 37)
+                                    .addComponent(radX)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(radO)))))
+                    .addComponent(jLabel4)
+                    .addComponent(cbx_rodadas, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        jPanel1Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {txf_NomeJ1, txf_NomeJ2});
 
         jPanel1Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btn_OK, btn_Voltar});
 
@@ -175,28 +144,20 @@ public class telaConfiguracao extends javax.swing.JFrame {
                 .addGap(34, 34, 34)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                    .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txf_NomeJ1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txf_NomeJ2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(12, 12, 12)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel5))
+                    .addComponent(radX)
+                    .addComponent(radO))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(cbx_rodadas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btn_Voltar)
-                            .addComponent(btn_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(radX)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(radO)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addComponent(cbx_rodadas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btn_Voltar)
+                    .addComponent(btn_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -208,22 +169,21 @@ public class telaConfiguracao extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void txf_NomeJ1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txf_NomeJ1ActionPerformed
-
-    }//GEN-LAST:event_txf_NomeJ1ActionPerformed
 
     private void btn_VoltarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_VoltarActionPerformed
         jogoDaVelhaUI jpDaVelhaUI = new jogoDaVelhaUI();
@@ -239,20 +199,15 @@ public class telaConfiguracao extends javax.swing.JFrame {
             } else {
                 GameConfig.getInstance().getJogador1().setApelido(txf_NomeJ1.getText());
             }
-            if (txf_NomeJ2.getText().isEmpty()) {
-                GameConfig.getInstance().getJogador2().setApelido("Jogador 2");
-            } else {
-                GameConfig.getInstance().getJogador2().setApelido(txf_NomeJ2.getText());
-            }
-            
+
             if (radX.isSelected()) {
-               GameConfig.getInstance().getJogador1().setSimbolo(Simbolo.X);
-               GameConfig.getInstance().getJogador2().setSimbolo(Simbolo.O);
+                GameConfig.getInstance().getJogador1().setSimbolo(Simbolo.X);
+                GameConfig.getInstance().getJogador2().setSimbolo(Simbolo.O);
             } else if (radO.isSelected()) {
-               GameConfig.getInstance().getJogador1().setSimbolo(Simbolo.O);
-               GameConfig.getInstance().getJogador2().setSimbolo(Simbolo.X);
+                GameConfig.getInstance().getJogador1().setSimbolo(Simbolo.O);
+                GameConfig.getInstance().getJogador2().setSimbolo(Simbolo.X);
             }
-            
+
             GameConfig.getInstance().setRodadas(Integer.parseInt(cbx_rodadas.getSelectedItem().toString()));
             telaJogo jpJogo = new telaJogo();
             this.dispose();
@@ -261,23 +216,12 @@ public class telaConfiguracao extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btn_OKActionPerformed
 
-    private void txf_NomeJ2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txf_NomeJ2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txf_NomeJ2ActionPerformed
-
     private void txf_NomeJ1KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txf_NomeJ1KeyTyped
         if (txf_NomeJ1.getText().length() >= limite) {
             evt.consume();
             JOptionPane.showMessageDialog(null, "Limite máximo de " + limite + " caractéres!", "Atenção", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_txf_NomeJ1KeyTyped
-
-    private void txf_NomeJ2KeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txf_NomeJ2KeyTyped
-        if (txf_NomeJ2.getText().length() >= limite) {
-            evt.consume();
-            JOptionPane.showMessageDialog(null, "Limite máximo de " + limite + " caractéres!", "Atenção", JOptionPane.INFORMATION_MESSAGE);
-        }
-    }//GEN-LAST:event_txf_NomeJ2KeyTyped
 
     /**
      * @param args the command line arguments
@@ -322,7 +266,6 @@ public class telaConfiguracao extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> cbx_rodadas;
     private javax.swing.JLabel dica;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -330,21 +273,16 @@ public class telaConfiguracao extends javax.swing.JFrame {
     private javax.swing.JRadioButton radO;
     private javax.swing.JRadioButton radX;
     private javax.swing.JTextField txf_NomeJ1;
-    private javax.swing.JTextField txf_NomeJ2;
     // End of variables declaration//GEN-END:variables
 
     private boolean validarCampos() {
         if (cbx_rodadas.getSelectedItem().equals("<Selecione a quantidade>")) {
             JOptionPane.showMessageDialog(null, "Selecione quantas rodadas deseja!", "Atenção!", JOptionPane.ERROR_MESSAGE);
             return false;
-        } else if (!txf_NomeJ1.getText().isEmpty() && !txf_NomeJ2.getText().isEmpty() && txf_NomeJ1.getText().equals(txf_NomeJ2.getText())) {
-            JOptionPane.showMessageDialog(null, "Coloque nomes diferentes para cada jogador!", "Atenção!", JOptionPane.ERROR_MESSAGE);
-            return false;
         } else if (radO.isSelected() == false && radX.isSelected() == false) {
             JOptionPane.showMessageDialog(null, "Selecione qual simbolo o jogador 1 utilizará!", "Atenção", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-
         return true;
     }
 }
