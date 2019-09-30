@@ -3,6 +3,8 @@ package br.senai.application;
 import br.senai.model.GameConfig;
 import br.senai.model.Jogador;
 import br.senai.model.Simbolo;
+import br.senai.util.ConexaoTCP;
+import br.senai.util.EscutaTCP;
 import br.senai.util.EscutaUDP;
 import java.awt.AWTEvent;
 import java.awt.Color;
@@ -22,15 +24,25 @@ import static java.awt.event.KeyEvent.VK_SPACE;
 import javax.swing.JOptionPane;
 import br.senai.util.JFrameUtil;
 import java.awt.Container;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 
@@ -40,12 +52,23 @@ import javax.swing.JFrame;
  */
 public class telaJogo extends javax.swing.JFrame {
 
+    private final int MAX_CONEXOES = 10;
+    private ServerSocket servidorTCP;
+    // thread de escuta da porta TCP
+    private EscutaTCP tcpEscutaThread;
+    // indica se está escutando porta, eeperando conexão
     private boolean estaEscutando;
+    // indica de programa conectou a um determinado servidor
+    private boolean estaConectado;
+    // lista com as conexões TCP ativas
+    private ArrayList<ConexaoTCP> lstConexoes;
+    private Set<Jogador> lstJogadoresOnline;
     private EscutaUDP udpEscutaThread; // thread para leitura da porta UDP
-    int rodadas = 1;
-    int jogadas = 0;
-    boolean ganhador = false;
+    private int rodadas = 1;
+    private int jogadas = 0;
+    private boolean ganhador = false;
     private Simbolo simboloDaVez = null;
+    private boolean statusJogo = false;
 
     public telaJogo() {
         initComponents();
@@ -140,10 +163,13 @@ public class telaJogo extends javax.swing.JFrame {
             }
         } catch (SocketException ex) {
         }
-
+        tcpEscutaThread = null;
+        servidorTCP = null;
         estaEscutando = false;
         DefaultListModel<String> model = new DefaultListModel<String>();
         lstMensagens.setModel(model);
+        lstConexoes = new ArrayList<ConexaoTCP>();
+        lstJogadoresOnline = new HashSet<Jogador>();
     }
 
     public void TrocarVez() {//******PASSA A VEZ DOS JOGADORES****************
@@ -310,6 +336,7 @@ public class telaJogo extends javax.swing.JFrame {
         Jogador jogadorDaVez = GameConfig.getInstance().getJogador(simboloDaVez);
         JL_vez.setText(jogadorDaVez.getApelido());
         JL_vezSimbolo.setText(jogadorDaVez.getSimbolo().simbolo);
+        
     }
 
     private void encerraPrograma() {
@@ -319,6 +346,20 @@ public class telaJogo extends javax.swing.JFrame {
             frame = frame.getParent();
         } while (!(frame instanceof JFrame));
         ((JFrame) frame).dispose();
+    }
+
+    public void encerraConexao(ConexaoTCP conex, boolean servidor) {
+        conex.encerraConexao();
+        // elimina conexão da lista de conexões
+        int idx;
+        if (servidor) {
+            idx = EncontraConexao(true);
+        } else {
+            idx = conexoesJCombo.getSelectedIndex();
+        }
+        if (idx >= 0) {
+            conexoesJCombo.remove(idx);
+        }
     }
 
     private void escutaPortaUDP() {
@@ -364,16 +405,64 @@ public class telaJogo extends javax.swing.JFrame {
                     JOptionPane.ERROR_MESSAGE);
             encerraPrograma();
             return;
-        }
+        }  
 
         // habilita/desabilita controles
         btnEscutar.setText("Parar");
         txtRecebePorta.setEnabled(false);
         estaEscutando = true;
+        interfacesJCombo.setEnabled(false);
 
         // executa thread de leitura da porta UDP
         udpEscutaThread.execute();
-    }//GEN-LAST:event_btnEscutarActionPerformed
+    }
+    
+    private void escutaPortaTCP() {
+        // verifica se usuário indicou a porta
+        // verifica se usuário forneceu uma porta válida
+        int porta = 0;
+        if (tryParseInt(txtRecebePorta.getText())) {
+            porta = Integer.parseInt(txtRecebePorta.getText());
+        }
+        if (porta < 1024) {
+            txtRecebePorta.requestFocus();
+            return;
+        }
+        // verifica se usuário escolheu a interface
+        int nInterface = interfacesJCombo.getSelectedIndex();
+        if (nInterface < 0) {
+            interfacesJCombo.requestFocus();
+            return;
+        }
+        // obtem endereço da interface de rede selecionada
+        InetAddress addrLocal = obtemInterfaceRede();
+        if (addrLocal == null) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro na obtenção da interface escolhida.",
+                    "Envia/Recebe mensagens via TCP",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        // cria servidor TCP
+        servidorTCP = criarSocketTCP(porta);
+        if (servidorTCP == null) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro na criação da conexão TCP.",
+                    "Envia/Recebe mensagens via TCP",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        // cria thread para leitura da porta TCP
+        tcpEscutaThread = new EscutaTCP(this, servidorTCP, addrLocal);
+        mostraMensagem("", "", "Escutando porta "
+                + txtRecebePorta.getText());
+        // habilita/desabilita controles
+        btnEscutar.setText("Parar");
+        txtRecebePorta.setEnabled(false);
+        estaEscutando = true;
+        // executa thread de leitura da porta TCP
+        tcpEscutaThread.execute();
+    }
 
     public void mostraMensagemRecebida(String endereco, int porta, String conteudo) {
         mostraMensagem("R", endereco, porta, conteudo);
@@ -393,7 +482,92 @@ public class telaJogo extends javax.swing.JFrame {
         ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
     }
 
-    private InetAddress obtemInterfaceRede() {
+    private void conectaComServidor() {
+        // verifica se IP foi fornecido
+        if (txtConectaIP.getText().isEmpty()) {
+            txtConectaIP.requestFocus();
+            return;
+        }
+        int porta;
+        try {
+            // número fornecido pelo usuário
+            porta = Integer.parseInt(txtConectaPorta.getText());
+            if (porta < 1) {
+                txtConectaPorta.requestFocus();
+                return;
+            }
+        } catch (NumberFormatException ex) {
+            // mostra mensagem de erro
+            JOptionPane.showMessageDialog(this,
+                    "Número da porta deve ser um número inteiro",
+                    "Iniciar Conexão", JOptionPane.ERROR_MESSAGE);
+
+            txtConectaPorta.requestFocus();
+            return;
+        }
+        try {
+            Socket skt = new Socket(txtConectaIP.getText(), porta);
+            String addr = txtConectaIP.getText() + ":"
+                    + txtConectaPorta.getText();
+            mostraMensagem("", addr, "Conectado com servidor TCP");
+            // cria nova thread para tratar a conexão
+            ConexaoTCP novaConexao = new ConexaoTCP(this, skt);
+            novaConexao.execute();
+            // atualiza lista de conexões ativas
+            insereConexao(novaConexao);
+            // atualiza controlespaint
+            estaConectado = true;
+            txtConectaIP.setEnabled(false);
+            txtConectaPorta.setEnabled(false);
+            btnConectar.setText("Desconectar");
+        } catch (IOException ex) {
+            String msg = "Erro: " + ex.getMessage();
+            JOptionPane.showMessageDialog(this, msg,
+                    "Conecta com servidor",
+                    JOptionPane.ERROR_MESSAGE);
+            estaConectado = false;
+            txtConectaIP.setEnabled(true);
+            txtConectaPorta.setEnabled(true);
+            btnConectar.setText("Conectar");
+        }
+    }
+
+    // procura por conexão selecionada para enviar mensagem
+    private ConexaoTCP ConexaoSelecionada(boolean servidor) {
+        int i = EncontraConexao(servidor);
+        if (i < 0) {
+            return null;
+        }
+
+        return lstConexoes.get(i);
+    }
+
+    private int EncontraConexao(boolean servidor) {
+        String addrSelecionado;
+        if (servidor) {
+            addrSelecionado = txtConectaIP.getText() + ":"
+                    + txtConectaPorta.getText();
+        } else {
+            int idx = conexoesJCombo.getSelectedIndex();
+            if (idx < 0) {
+                return -1;
+            }
+            addrSelecionado = conexoesJCombo.getItemAt(idx);
+        }
+        String addr;
+        for (int i = 0; i < lstConexoes.size(); ++i) {
+            addr = lstConexoes.get(i).getSocket().
+                    getRemoteSocketAddress().toString();
+            // elimina '/' no endereço
+            addr = addr.replace("/", "");
+            if (addr.compareTo(addrSelecionado) == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public InetAddress obtemInterfaceRede() {
         // verifica se usuário escolheu a interface
         int nInterface = interfacesJCombo.getSelectedIndex();
         if (nInterface < 0) {
@@ -411,6 +585,66 @@ public class telaJogo extends javax.swing.JFrame {
         }
 
         return addr;
+    }
+
+    // cria e abre um socket TCP em uma porta qualquer
+    // na interface indicada
+    private ServerSocket criarSocketTCP(int porta) {
+        InetAddress addr = obtemInterfaceRede();
+        if (addr == null) {
+            return null;
+        }
+        ServerSocket socket;
+        try {
+            // cria um socket para servidor TCP.
+            // Parâmetros:
+            // porta: se 0, usar uma porta que será
+            // alocada automaticamente
+            // backlog: número máximo de conexões aceitas
+            // bindAddr: addr (InetAddress local que o servidor
+            // irá ligar)
+            socket = new ServerSocket(porta, MAX_CONEXOES, addr);
+            socket.setReuseAddress(true);
+        } catch (IOException e) {
+            return null;
+        }
+        return socket;
+    }
+
+    public void mostraMensagemRecebida(String endereco, String conteudo) {
+        mostraMensagem("R", endereco, conteudo);
+    }
+
+    public void mostraMensagemEnviada(String endereco, String conteudo) {
+        mostraMensagem("E", endereco, conteudo);
+    }
+
+    public void mostraMensagem(String prefixo, String endereco, String conteudo) {
+        String msg;
+        if (prefixo.isEmpty()) {
+            msg = conteudo;
+        } else {
+            msg = prefixo + " [" + endereco + "] " + conteudo;
+        }
+        ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
+    }
+
+    public void insereConexao(ConexaoTCP novaConexao) {
+        // adiciona nova conexão na lista de conexões ativas
+        lstConexoes.add(novaConexao);
+        // mostra nova conexão, sem '/' no endereço
+        SocketAddress remoteAddr
+                = novaConexao.getSocket().getRemoteSocketAddress();
+        conexoesJCombo.addItem(
+                remoteAddr.toString().replace("/", ""));
+    }
+    
+    public void insereJogadorOnline(Jogador jogador) {
+        // adiciona nova conexão na lista de conexões ativas
+        lstJogadoresOnline.add(jogador);
+        // mostra nova conexão, sem '/' no endereço
+        conexoesJCombo.addItem(
+                jogador.getIp().replace("/", "")+" - "+jogador.getApelido());
     }
 
     private boolean tryParseInt(String valor) {
@@ -468,9 +702,12 @@ public class telaJogo extends javax.swing.JFrame {
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         txtEnviaPorta = new javax.swing.JTextField();
-        btnEnviar = new javax.swing.JButton();
+        btnDesconectar = new javax.swing.JButton();
         jLabel12 = new javax.swing.JLabel();
         txtMensagem = new javax.swing.JTextField();
+        btnEnviar = new javax.swing.JButton();
+        conexoesJCombo = new javax.swing.JComboBox<>();
+        jLabel19 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         btnEscutar = new javax.swing.JButton();
         jLabel13 = new javax.swing.JLabel();
@@ -481,6 +718,12 @@ public class telaJogo extends javax.swing.JFrame {
         jLabel14 = new javax.swing.JLabel();
         interfacesJCombo = new javax.swing.JComboBox<>();
         btn_Encerrar = new javax.swing.JButton();
+        jPanel10 = new javax.swing.JPanel();
+        btnConectar = new javax.swing.JButton();
+        jLabel20 = new javax.swing.JLabel();
+        txtConectaIP = new javax.swing.JTextField();
+        jLabel21 = new javax.swing.JLabel();
+        txtConectaPorta = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Jogo da Velha");
@@ -828,6 +1071,15 @@ public class telaJogo extends javax.swing.JFrame {
 
         jLabel10.setText("Porta:");
 
+        btnDesconectar.setText("Desconectar");
+        btnDesconectar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDesconectarActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setText("Mensagem:");
+
         btnEnviar.setText("Enviar");
         btnEnviar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -835,46 +1087,62 @@ public class telaJogo extends javax.swing.JFrame {
             }
         });
 
-        jLabel12.setText("Mensagem:");
+        jLabel19.setText("Conexões");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap(14, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jLabel12)
+                .addContainerGap()
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(conexoesJCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel9))
-                        .addGap(18, 18, 18)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel10)
                             .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 85, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addComponent(txtMensagem))
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel9))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel10)
+                                    .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jLabel12)
+                            .addComponent(txtMensagem))
+                        .addGap(10, 10, 10)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnEnviar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnDesconectar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel19)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(jLabel10))
+                .addComponent(jLabel19)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(conexoesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnEnviar))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel12)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnDesconectar, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel9)
+                            .addComponent(jLabel10))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtMensagem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtMensagem, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnEnviar, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Receber", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
@@ -899,7 +1167,7 @@ public class telaJogo extends javax.swing.JFrame {
                         .addComponent(jLabel13)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(txtRecebePorta)
-                    .addComponent(btnEscutar, javax.swing.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE))
+                    .addComponent(btnEscutar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -926,11 +1194,11 @@ public class telaJogo extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jScrollPane2)
         );
 
         jLabel14.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
@@ -945,6 +1213,51 @@ public class telaJogo extends javax.swing.JFrame {
             }
         });
 
+        jPanel10.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Conectar", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        btnConectar.setText("Conectar");
+        btnConectar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConectarActionPerformed(evt);
+            }
+        });
+
+        jLabel20.setText("IP:");
+
+        jLabel21.setText("Porta:");
+
+        javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
+        jPanel10.setLayout(jPanel10Layout);
+        jPanel10Layout.setHorizontalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel10Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtConectaIP)
+                    .addComponent(btnConectar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtConectaPorta)
+                    .addGroup(jPanel10Layout.createSequentialGroup()
+                        .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel20)
+                            .addComponent(jLabel21))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jPanel10Layout.setVerticalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
+                .addComponent(jLabel20)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtConectaIP, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel21)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtConectaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnConectar)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -952,17 +1265,19 @@ public class telaJogo extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel14)
                             .addComponent(interfacesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
                         .addComponent(Dica, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(btn_Voltar, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -982,13 +1297,16 @@ public class telaJogo extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(interfacesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(Dica, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_Voltar)
                     .addComponent(btn_Encerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1005,16 +1323,16 @@ public class telaJogo extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jp_jogo, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(14, 14, 14))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jp_jogo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 582, Short.MAX_VALUE)
+                    .addComponent(jp_jogo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -1137,7 +1455,7 @@ public class telaJogo extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnEscutarActionPerformed
 
-    private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
+    private void btnDesconectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesconectarActionPerformed
         // verifica se usuário informou todos os parâmetros:
         // endereço, porta e mensagem
         String msg = txtMensagem.getText();
@@ -1196,11 +1514,41 @@ public class telaJogo extends javax.swing.JFrame {
                     "Envia/Recebe mensagens via UDP",
                     JOptionPane.ERROR_MESSAGE);
         }
-    }//GEN-LAST:event_btnEnviarActionPerformed
+    }//GEN-LAST:event_btnDesconectarActionPerformed
 
     private void btn_EncerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_EncerrarActionPerformed
         encerraPrograma();
     }//GEN-LAST:event_btn_EncerrarActionPerformed
+
+    private void btnConectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConectarActionPerformed
+        if (estaConectado) {
+            // desconecta com servidor
+            ConexaoTCP conex = ConexaoSelecionada(true);
+            if (conex != null) {
+                encerraConexao(conex, true);
+                // atualiza controles
+                estaConectado = false;
+                txtConectaIP.setEnabled(true);
+                txtConectaPorta.setEnabled(true);
+                btnConectar.setText("Conectar");
+            }
+        } else {
+            conectaComServidor();
+        }
+    }//GEN-LAST:event_btnConectarActionPerformed
+
+    private void btnEnviarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnviarActionPerformed
+        // verifica se usuário informou todos os parâmetros:
+        // endereço, porta e mensagem
+        String msg = txtMensagem.getText();
+        if (msg.length() == 0) {
+            txtEnviaPorta.requestFocus();
+            return;
+        }
+
+        enviarUDP(msg);
+        //enviarTCP(msg);
+    }//GEN-LAST:event_btnEnviarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1262,11 +1610,18 @@ public class telaJogo extends javax.swing.JFrame {
     public javax.swing.JButton M7;
     public javax.swing.JButton M8;
     public javax.swing.JButton M9;
+    private javax.swing.JButton btnConectar;
+    private javax.swing.JButton btnDesconectar;
     private javax.swing.JButton btnEnviar;
     private javax.swing.JButton btnEscutar;
+    private javax.swing.JButton btnEscutar1;
+    private javax.swing.JButton btnEscutar2;
+    private javax.swing.JButton btnEscutar3;
+    private javax.swing.JButton btnEscutar4;
     private javax.swing.JButton btn_Encerrar;
     private javax.swing.JButton btn_NovoJogo;
     private javax.swing.JButton btn_Voltar;
+    private javax.swing.JComboBox<String> conexoesJCombo;
     private javax.swing.JComboBox<String> interfacesJCombo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -1274,7 +1629,14 @@ public class telaJogo extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1283,17 +1645,92 @@ public class telaJogo extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JPanel jp_jogadores;
     private javax.swing.JPanel jp_jogo;
     private javax.swing.JList<String> lstMensagens;
+    private javax.swing.JTextField txtConectaIP;
+    private javax.swing.JTextField txtConectaPorta;
     private javax.swing.JTextField txtDestino;
     private javax.swing.JTextField txtEnviaPorta;
     private javax.swing.JTextField txtMensagem;
     private javax.swing.JTextField txtRecebePorta;
+    private javax.swing.JTextField txtRecebePorta1;
+    private javax.swing.JTextField txtRecebePorta2;
+    private javax.swing.JTextField txtRecebePorta3;
+    private javax.swing.JTextField txtRecebePorta4;
     // End of variables declaration//GEN-END:variables
+
+    private void enviarUDP(String msg) {
+        if (txtDestino.getText().length() == 0) {
+            txtDestino.requestFocus();
+            return;
+        }
+
+        int porta = 0;
+        if (tryParseInt(txtEnviaPorta.getText())) {
+            porta = Integer.parseInt(txtEnviaPorta.getText());
+        }
+
+        if (porta < 1024) {
+            txtEnviaPorta.requestFocus();
+            return;
+        }
+
+        try {
+            // cria endereço para enviar mensagem
+            InetAddress addr = InetAddress.getByName(txtDestino.getText());
+
+            // cria pacote de dados para ser enviado
+            DatagramPacket p = new DatagramPacket(msg.getBytes(),
+                    msg.getBytes().length,
+                    addr, porta);
+
+            // obtem endereço da interface de rede selecionada
+            InetAddress addrLocal = obtemInterfaceRede();
+            if (addrLocal == null) {
+                JOptionPane.showMessageDialog(null,
+                        "Erro na obtenção da interface escolhida.",
+                        "Envia/Recebe mensagens via UDP",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // cria um socket do tipo datagram e
+            // liga-o a qualquer porta disponível
+            DatagramSocket udpSocket = new DatagramSocket(0, addrLocal);
+
+            // envia pacote para o endereço e porta especificados
+            udpSocket.send(p);
+
+            // mostra mensagem enviada
+            mostraMensagem("E", txtDestino.getText(), porta, msg);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro no envio da mensagem.\n Erro: " + ex.getMessage(),
+                    "Envia/Recebe mensagens via UDP",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void enviarTCP(String msg) {
+        // verifica se existe uma conexão selecionada
+        ConexaoTCP conex = ConexaoSelecionada(false);
+        if (conex == null) {
+            return;
+        }
+        
+        // envia mensagem
+        conex.enviarMensagemTCP(msg);
+    }
 }
