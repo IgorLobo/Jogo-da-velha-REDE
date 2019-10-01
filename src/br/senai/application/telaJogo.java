@@ -72,7 +72,7 @@ public class telaJogo extends javax.swing.JFrame {
 
     public telaJogo() {
         initComponents();
-        IniciarCampos();
+        iniciarCampos();
         JFrameUtil.getInstance().setIcon(this);
         Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
             @Override
@@ -124,14 +124,14 @@ public class telaJogo extends javax.swing.JFrame {
         }, AWTEvent.KEY_EVENT_MASK);
     }
 
-    public void IniciarCampos() {
+    public void iniciarCampos() {
 
         JL_J1.setText(GameConfig.getInstance().getJogador1().getApelido() + ":");
         JL_J2.setText(GameConfig.getInstance().getJogador2().getApelido() + ":");
         simboloDaVez = GameConfig.getInstance().getJogador1().getSimbolo();
 
         JL_totalRodadas.setText(Integer.toString(GameConfig.getInstance().getRodadas()));
-        Atualizar();
+        atualizar();
         JL_vez.setText(GameConfig.getInstance().getJogador1().getApelido());
         btn_NovoJogo.setToolTipText("Cria um novo jogo! :)");
         Dica.setToolTipText("<html><b>Dica:</b> Você pode jogar pelo teclado numérico também!<html>");
@@ -172,8 +172,8 @@ public class telaJogo extends javax.swing.JFrame {
         lstJogadoresOnline = new HashSet<Jogador>();
     }
 
-    public void TrocarVez() {//******PASSA A VEZ DOS JOGADORES****************
-        TestarGanhador(simboloDaVez);
+    public void trocarVez() {//******PASSA A VEZ DOS JOGADORES****************
+        testarGanhador(simboloDaVez);
         if (simboloDaVez == Simbolo.X) {
             simboloDaVez = Simbolo.O;
         } else {
@@ -190,77 +190,77 @@ public class telaJogo extends javax.swing.JFrame {
             M8.setForeground(Color.red);
             M9.setForeground(Color.red);
             JOptionPane.showMessageDialog(null, "Deu velha :(");
-            MostrarGanhador(null);
-            Limpar();
+            mostrarGanhador(null);
+            limpar();
         }
 
-        Atualizar();
+        atualizar();
     }
 
-    public void TestarGanhador(Simbolo simbolo) {//******Teste ganhador***********
+    public void testarGanhador(Simbolo simbolo) {//******Teste ganhador***********
         //*******Teste linhas**************
 
         if (M1.getText().equals(simbolo.simbolo) && M2.getText().equals(simbolo.simbolo) && M3.getText().equals(simbolo.simbolo)) {
             M1.setForeground(Color.green);
             M2.setForeground(Color.green);
             M3.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
         } else if (M4.getText().equals(simbolo.simbolo) && M5.getText().equals(simbolo.simbolo) && M6.getText().equals(simbolo.simbolo)) {
             M4.setForeground(Color.green);
             M5.setForeground(Color.green);
             M6.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
         } else if (M7.getText().equals(simbolo.simbolo) && M8.getText().equals(simbolo.simbolo) && M9.getText().equals(simbolo.simbolo)) {
             M7.setForeground(Color.green);
             M8.setForeground(Color.green);
             M9.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
         } else if (M7.getText().equals(simbolo.simbolo) && M4.getText().equals(simbolo.simbolo) && M1.getText().equals(simbolo.simbolo)) {
             M7.setForeground(Color.green);
             M4.setForeground(Color.green);
             M1.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
         } else if (M8.getText().equals(simbolo.simbolo) && M5.getText().equals(simbolo.simbolo) && M2.getText().equals(simbolo.simbolo)) {
             M8.setForeground(Color.green);
             M5.setForeground(Color.green);
             M2.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
         } else if (M9.getText().equals(simbolo.simbolo) && M6.getText().equals(simbolo.simbolo) && M3.getText().equals(simbolo.simbolo)) {
             M9.setForeground(Color.green);
             M6.setForeground(Color.green);
             M3.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
         } else if (M7.getText().equals(simbolo.simbolo) && M5.getText().equals(simbolo.simbolo) && M3.getText().equals(simbolo.simbolo)) {
             M7.setForeground(Color.green);
             M5.setForeground(Color.green);
             M3.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
         } else if (M1.getText().equals(simbolo.simbolo) && M5.getText().equals(simbolo.simbolo) && M9.getText().equals(simbolo.simbolo)) {
             M1.setForeground(Color.green);
             M5.setForeground(Color.green);
             M9.setForeground(Color.green);
-            MostrarGanhador(simbolo);
-            Limpar();
+            mostrarGanhador(simbolo);
+            limpar();
 
         }
 
     }
 
-    public void MostrarGanhador(Simbolo simbolo) {//**********************
+    public void mostrarGanhador(Simbolo simbolo) {//**********************
         Jogador jogadorVencedor = GameConfig.getInstance().getJogador(simbolo);
         ganhador = true;
         if (jogadorVencedor != null) {
             simboloDaVez = jogadorVencedor.getSimbolo();
             jogadorVencedor.adicionarPonto(5);
             jogadorVencedor.adicionarVitoria(1);
-            Atualizar();
+            atualizar();
             JOptionPane.showMessageDialog(null, "Parabéns, " + jogadorVencedor.getApelido() + " ganhou a rodada!!");
 
         } else {
@@ -273,7 +273,7 @@ public class telaJogo extends javax.swing.JFrame {
         }
     }
 
-    public void Limpar() {
+    public void limpar() {
         jogadas = 0;
         if (rodadas < GameConfig.getInstance().getRodadas()) {
             M1.setText("");
@@ -324,7 +324,7 @@ public class telaJogo extends javax.swing.JFrame {
         M9.setForeground(Color.black);
     }
 
-    public void Atualizar() {
+    public void atualizar() {
         JL_jogadas.setText(Integer.toString(jogadas));
         JL_Rodada.setText(Integer.toString(rodadas));
 
@@ -336,7 +336,7 @@ public class telaJogo extends javax.swing.JFrame {
         Jogador jogadorDaVez = GameConfig.getInstance().getJogador(simboloDaVez);
         JL_vez.setText(jogadorDaVez.getApelido());
         JL_vezSimbolo.setText(jogadorDaVez.getSimbolo().simbolo);
-        
+
     }
 
     private void encerraPrograma() {
@@ -353,7 +353,7 @@ public class telaJogo extends javax.swing.JFrame {
         // elimina conexão da lista de conexões
         int idx;
         if (servidor) {
-            idx = EncontraConexao(true);
+            idx = encontraConexao(true);
         } else {
             idx = conexoesJCombo.getSelectedIndex();
         }
@@ -405,7 +405,7 @@ public class telaJogo extends javax.swing.JFrame {
                     JOptionPane.ERROR_MESSAGE);
             encerraPrograma();
             return;
-        }  
+        }
 
         // habilita/desabilita controles
         btnEscutar.setText("Parar");
@@ -416,7 +416,7 @@ public class telaJogo extends javax.swing.JFrame {
         // executa thread de leitura da porta UDP
         udpEscutaThread.execute();
     }
-    
+
     private void escutaPortaTCP() {
         // verifica se usuário indicou a porta
         // verifica se usuário forneceu uma porta válida
@@ -482,6 +482,24 @@ public class telaJogo extends javax.swing.JFrame {
         ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
     }
 
+    public void mostraMensagemRecebida(String endereco, String conteudo) {
+        mostraMensagem("R", endereco, conteudo);
+    }
+
+    public void mostraMensagemEnviada(String endereco, String conteudo) {
+        mostraMensagem("E", endereco, conteudo);
+    }
+
+    public void mostraMensagem(String prefixo, String endereco, String conteudo) {
+        String msg;
+        if (prefixo.isEmpty()) {
+            msg = conteudo;
+        } else {
+            msg = prefixo + " [" + endereco + "] " + conteudo;
+        }
+        ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
+    }
+
     private void conectaComServidor() {
         // verifica se IP foi fornecido
         if (txtConectaIP.getText().isEmpty()) {
@@ -533,8 +551,8 @@ public class telaJogo extends javax.swing.JFrame {
     }
 
     // procura por conexão selecionada para enviar mensagem
-    private ConexaoTCP ConexaoSelecionada(boolean servidor) {
-        int i = EncontraConexao(servidor);
+    private ConexaoTCP conexaoSelecionada(boolean servidor) {
+        int i = encontraConexao(servidor);
         if (i < 0) {
             return null;
         }
@@ -542,7 +560,7 @@ public class telaJogo extends javax.swing.JFrame {
         return lstConexoes.get(i);
     }
 
-    private int EncontraConexao(boolean servidor) {
+    private int encontraConexao(boolean servidor) {
         String addrSelecionado;
         if (servidor) {
             addrSelecionado = txtConectaIP.getText() + ":"
@@ -611,24 +629,6 @@ public class telaJogo extends javax.swing.JFrame {
         return socket;
     }
 
-    public void mostraMensagemRecebida(String endereco, String conteudo) {
-        mostraMensagem("R", endereco, conteudo);
-    }
-
-    public void mostraMensagemEnviada(String endereco, String conteudo) {
-        mostraMensagem("E", endereco, conteudo);
-    }
-
-    public void mostraMensagem(String prefixo, String endereco, String conteudo) {
-        String msg;
-        if (prefixo.isEmpty()) {
-            msg = conteudo;
-        } else {
-            msg = prefixo + " [" + endereco + "] " + conteudo;
-        }
-        ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
-    }
-
     public void insereConexao(ConexaoTCP novaConexao) {
         // adiciona nova conexão na lista de conexões ativas
         lstConexoes.add(novaConexao);
@@ -638,13 +638,21 @@ public class telaJogo extends javax.swing.JFrame {
         conexoesJCombo.addItem(
                 remoteAddr.toString().replace("/", ""));
     }
-    
+
     public void insereJogadorOnline(Jogador jogador) {
         // adiciona nova conexão na lista de conexões ativas
         lstJogadoresOnline.add(jogador);
         // mostra nova conexão, sem '/' no endereço
-        conexoesJCombo.addItem(
-                jogador.getIp().replace("/", "")+" - "+jogador.getApelido());
+        jogadoresOnlineJCombo.addItem(
+                jogador.getIp().replace("/", "") + ":" + jogador.getPort() + " - " + jogador.getApelido());
+    }
+
+    public void removerJogadorOnline(String Apelido, String ip, int porta) {
+        lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(Apelido) && jogador.getIp().equalsIgnoreCase(ip) && jogador.getPort() == porta));
+        jogadoresOnlineJCombo.removeAllItems();
+        lstJogadoresOnline.forEach((jogador) -> {
+            jogadoresOnlineJCombo.addItem(jogador.getIp().replace("/", "") + ":" + jogador.getPort() + " - " + jogador.getApelido());
+        });
     }
 
     private boolean tryParseInt(String valor) {
@@ -654,6 +662,78 @@ public class telaJogo extends javax.swing.JFrame {
         } catch (NumberFormatException e) {
             return false;
         }
+    }
+
+    private void enviarUDP(String msg) {
+        if (txtDestino.getText().length() == 0) {
+            txtDestino.requestFocus();
+            return;
+        }
+
+        int porta = 0;
+        if (tryParseInt(txtEnviaPorta.getText())) {
+            porta = Integer.parseInt(txtEnviaPorta.getText());
+        }
+
+        if (porta < 1024) {
+            txtEnviaPorta.requestFocus();
+            return;
+        }
+
+        try {
+            // cria endereço para enviar mensagem
+            InetAddress addr = InetAddress.getByName(txtDestino.getText());
+
+            // cria pacote de dados para ser enviado
+            DatagramPacket p = new DatagramPacket(msg.getBytes(),
+                    msg.getBytes().length,
+                    addr, porta);
+
+            // obtem endereço da interface de rede selecionada
+            InetAddress addrLocal = obtemInterfaceRede();
+            if (addrLocal == null) {
+                JOptionPane.showMessageDialog(null,
+                        "Erro na obtenção da interface escolhida.",
+                        "Envia/Recebe mensagens via UDP",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // cria um socket do tipo datagram e
+            // liga-o a qualquer porta disponível
+            DatagramSocket udpSocket = new DatagramSocket(0, addrLocal);
+
+            // envia pacote para o endereço e porta especificados
+            udpSocket.send(p);
+
+            // mostra mensagem enviada
+            mostraMensagem("E", txtDestino.getText(), porta, msg);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null,
+                    "Erro no envio da mensagem.\n Erro: " + ex.getMessage(),
+                    "Envia/Recebe mensagens via UDP",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void enviarTCP(String msg) {
+        // verifica se existe uma conexão selecionada
+        ConexaoTCP conex = conexaoSelecionada(false);
+        if (conex == null) {
+            return;
+        }
+        // envia mensagem
+        conex.enviarMensagemTCP(msg);
+    }
+    
+    public Jogador obterJogador(String apelido, String ip, int porta){
+        for (Jogador jogador : lstJogadoresOnline) {
+            if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ip) && jogador.getPort() == porta) {
+                return jogador;
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -706,8 +786,6 @@ public class telaJogo extends javax.swing.JFrame {
         jLabel12 = new javax.swing.JLabel();
         txtMensagem = new javax.swing.JTextField();
         btnEnviar = new javax.swing.JButton();
-        conexoesJCombo = new javax.swing.JComboBox<>();
-        jLabel19 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         btnEscutar = new javax.swing.JButton();
         jLabel13 = new javax.swing.JLabel();
@@ -724,6 +802,10 @@ public class telaJogo extends javax.swing.JFrame {
         txtConectaIP = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
         txtConectaPorta = new javax.swing.JTextField();
+        jPanel11 = new javax.swing.JPanel();
+        jogadoresOnlineJCombo = new javax.swing.JComboBox<>();
+        jPanel12 = new javax.swing.JPanel();
+        conexoesJCombo = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Jogo da Velha");
@@ -1020,7 +1102,7 @@ public class telaJogo extends javax.swing.JFrame {
                     .addComponent(JL_vezSimbolo, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(JL_vez, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 51, Short.MAX_VALUE)
                 .addGroup(jp_jogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(M7, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                     .addComponent(M8, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1035,9 +1117,8 @@ public class telaJogo extends javax.swing.JFrame {
                     .addComponent(M1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(M2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(M3, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jp_jogadores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(55, 55, 55))
+                .addGap(37, 37, 37)
+                .addComponent(jp_jogadores, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jp_jogoLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {M1, M2, M3, M4, M5, M6, M7, M8, M9});
@@ -1087,8 +1168,6 @@ public class telaJogo extends javax.swing.JFrame {
             }
         });
 
-        jLabel19.setText("Conexões");
-
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -1096,35 +1175,26 @@ public class telaJogo extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(conexoesJCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel9))
-                                .addGap(18, 18, 18)
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel10)
-                                    .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(jLabel12)
-                            .addComponent(txtMensagem))
-                        .addGap(10, 10, 10)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btnEnviar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnDesconectar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel19)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                            .addComponent(txtDestino, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel10)
+                            .addComponent(txtEnviaPorta, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel12)
+                    .addComponent(txtMensagem))
+                .addGap(10, 10, 10)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnEnviar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnDesconectar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jLabel19)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(conexoesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap(20, Short.MAX_VALUE)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnDesconectar, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel4Layout.createSequentialGroup()
@@ -1194,7 +1264,7 @@ public class telaJogo extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1258,6 +1328,44 @@ public class telaJogo extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jPanel11.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Lista de players online", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
+        jPanel11.setLayout(jPanel11Layout);
+        jPanel11Layout.setHorizontalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jogadoresOnlineJCombo, 0, 207, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel11Layout.setVerticalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel11Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jogadoresOnlineJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel12.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Lista de conexões", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 1, 11))); // NOI18N
+
+        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
+        jPanel12.setLayout(jPanel12Layout);
+        jPanel12Layout.setHorizontalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel12Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(conexoesJCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel12Layout.setVerticalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(conexoesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -1271,20 +1379,26 @@ public class telaJogo extends javax.swing.JFrame {
                             .addComponent(jPanel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel14)
-                            .addComponent(interfacesJCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                            .addGroup(jPanel3Layout.createSequentialGroup()
+                                .addComponent(jLabel14)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(interfacesJCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
                         .addComponent(Dica, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(btn_Voltar, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btn_NovoJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btn_Encerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -1305,6 +1419,10 @@ public class telaJogo extends javax.swing.JFrame {
                         .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1323,18 +1441,18 @@ public class telaJogo extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jp_jogo, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(14, 14, 14))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jp_jogo, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jp_jogo, javax.swing.GroupLayout.DEFAULT_SIZE, 650, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -1346,8 +1464,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M7.getText().equals("") && ganhador == false) {
             jogadas++;
             M7.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M7ActionPerformed
 
@@ -1355,8 +1473,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M4.getText().equals("") && ganhador == false) {
             jogadas++;
             M4.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M4ActionPerformed
 
@@ -1364,8 +1482,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M1.getText().equals("") && ganhador == false) {
             jogadas++;
             M1.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M1ActionPerformed
 
@@ -1379,8 +1497,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M8.getText().equals("") && ganhador == false) {
             jogadas++;
             M8.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M8ActionPerformed
 
@@ -1388,8 +1506,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M9.getText().equals("") && ganhador == false) {
             jogadas++;
             M9.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M9ActionPerformed
 
@@ -1397,8 +1515,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M5.getText().equals("") && ganhador == false) {
             jogadas++;
             M5.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M5ActionPerformed
 
@@ -1406,8 +1524,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M6.getText().equals("") && ganhador == false) {
             jogadas++;
             M6.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M6ActionPerformed
 
@@ -1415,8 +1533,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M2.getText().equals("") && ganhador == false) {
             jogadas++;
             M2.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M2ActionPerformed
 
@@ -1424,8 +1542,8 @@ public class telaJogo extends javax.swing.JFrame {
         if (M3.getText().equals("") && ganhador == false) {
             jogadas++;
             M3.setText(simboloDaVez.simbolo);
-            TrocarVez();
-            Atualizar();
+            trocarVez();
+            atualizar();
         }
     }//GEN-LAST:event_M3ActionPerformed
 
@@ -1523,7 +1641,7 @@ public class telaJogo extends javax.swing.JFrame {
     private void btnConectarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConectarActionPerformed
         if (estaConectado) {
             // desconecta com servidor
-            ConexaoTCP conex = ConexaoSelecionada(true);
+            ConexaoTCP conex = conexaoSelecionada(true);
             if (conex != null) {
                 encerraConexao(conex, true);
                 // atualiza controles
@@ -1614,10 +1732,6 @@ public class telaJogo extends javax.swing.JFrame {
     private javax.swing.JButton btnDesconectar;
     private javax.swing.JButton btnEnviar;
     private javax.swing.JButton btnEscutar;
-    private javax.swing.JButton btnEscutar1;
-    private javax.swing.JButton btnEscutar2;
-    private javax.swing.JButton btnEscutar3;
-    private javax.swing.JButton btnEscutar4;
     private javax.swing.JButton btn_Encerrar;
     private javax.swing.JButton btn_NovoJogo;
     private javax.swing.JButton btn_Voltar;
@@ -1629,11 +1743,6 @@ public class telaJogo extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
@@ -1646,15 +1755,14 @@ public class telaJogo extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JComboBox<String> jogadoresOnlineJCombo;
     private javax.swing.JPanel jp_jogadores;
     private javax.swing.JPanel jp_jogo;
     private javax.swing.JList<String> lstMensagens;
@@ -1664,73 +1772,5 @@ public class telaJogo extends javax.swing.JFrame {
     private javax.swing.JTextField txtEnviaPorta;
     private javax.swing.JTextField txtMensagem;
     private javax.swing.JTextField txtRecebePorta;
-    private javax.swing.JTextField txtRecebePorta1;
-    private javax.swing.JTextField txtRecebePorta2;
-    private javax.swing.JTextField txtRecebePorta3;
-    private javax.swing.JTextField txtRecebePorta4;
     // End of variables declaration//GEN-END:variables
-
-    private void enviarUDP(String msg) {
-        if (txtDestino.getText().length() == 0) {
-            txtDestino.requestFocus();
-            return;
-        }
-
-        int porta = 0;
-        if (tryParseInt(txtEnviaPorta.getText())) {
-            porta = Integer.parseInt(txtEnviaPorta.getText());
-        }
-
-        if (porta < 1024) {
-            txtEnviaPorta.requestFocus();
-            return;
-        }
-
-        try {
-            // cria endereço para enviar mensagem
-            InetAddress addr = InetAddress.getByName(txtDestino.getText());
-
-            // cria pacote de dados para ser enviado
-            DatagramPacket p = new DatagramPacket(msg.getBytes(),
-                    msg.getBytes().length,
-                    addr, porta);
-
-            // obtem endereço da interface de rede selecionada
-            InetAddress addrLocal = obtemInterfaceRede();
-            if (addrLocal == null) {
-                JOptionPane.showMessageDialog(null,
-                        "Erro na obtenção da interface escolhida.",
-                        "Envia/Recebe mensagens via UDP",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // cria um socket do tipo datagram e
-            // liga-o a qualquer porta disponível
-            DatagramSocket udpSocket = new DatagramSocket(0, addrLocal);
-
-            // envia pacote para o endereço e porta especificados
-            udpSocket.send(p);
-
-            // mostra mensagem enviada
-            mostraMensagem("E", txtDestino.getText(), porta, msg);
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null,
-                    "Erro no envio da mensagem.\n Erro: " + ex.getMessage(),
-                    "Envia/Recebe mensagens via UDP",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void enviarTCP(String msg) {
-        // verifica se existe uma conexão selecionada
-        ConexaoTCP conex = ConexaoSelecionada(false);
-        if (conex == null) {
-            return;
-        }
-        
-        // envia mensagem
-        conex.enviarMensagemTCP(msg);
-    }
 }

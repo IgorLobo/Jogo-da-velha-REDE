@@ -25,33 +25,47 @@ public class Acoes {
 
     public Acoes() {
     }
-    
-    public Acoes(telaJogo mainFrame){
+
+    public Acoes(telaJogo mainFrame) {
         this.mainFrame = mainFrame;
     }
 
     public void acaoPadraoId(ProtocoloComunicacao pc, String hostAddress, int port) throws IOException {
+        String[] mensagem;
         switch (pc.getId()) {
             case "01":
-                this.enviarUDP(hostAddress, port, pc.enviarMensagem("02"+gameConfig.getJogador1().getApelido()));
+                this.enviarUDP(hostAddress, port, pc.enviarMensagem("02" + gameConfig.getJogador1().getApelido()));
                 mainFrame.insereJogadorOnline(new Jogador(pc.getMensagem(), hostAddress, port));
-                mainFrame.Atualizar();
+                mainFrame.atualizar();
                 break;
             case "02":
                 mainFrame.insereJogadorOnline(new Jogador(pc.getMensagem(), hostAddress, port));
-                mainFrame.Atualizar();
+                mainFrame.atualizar();
                 break;
             case "03":
-
+                mainFrame.removerJogadorOnline(pc.getMensagem(), hostAddress, port);
+                mainFrame.atualizar();
                 break;
             case "04":
-
+                mainFrame.mostraMensagem("R", hostAddress + ":" + port + " - " + pc.getMensagem(), "está te convidando para uma partida.");
                 break;
             case "05":
-
+                mensagem = pc.getMensagem().split(";");
+                Jogador jogador;
+                if (Integer.parseInt(mensagem[1]) != 0) {
+                    jogador = mainFrame.obterJogador(mensagem[0], hostAddress, port);
+                    if (jogador != null) {
+                        mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "está te esperando na porta "+mensagem[1]+".");
+                        enviarUDP(hostAddress, port, pc.enviarMensagem("06Ok"));
+                    } else {
+                        mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "não é um jogador válido.");
+                    }
+                }
                 break;
             case "06":
-
+                mensagem = pc.getMensagem().split("ok");
+                
+                //String s = mensagem[1];
                 break;
             case "07":
 

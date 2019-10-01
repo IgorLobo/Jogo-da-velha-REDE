@@ -68,6 +68,7 @@ public class ConexaoTCP extends SwingWorker<Boolean, String> {
                     // elimina '/' no endereço
                     addr = addr.replace("/", "");
                     
+                    
                     // mostra mensagem recebida
                     mainFrame.mostraMensagemRecebida(addr, msg);
 
