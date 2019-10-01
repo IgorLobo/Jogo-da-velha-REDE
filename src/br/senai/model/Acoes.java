@@ -56,7 +56,7 @@ public class Acoes {
                     jogador = mainFrame.obterJogador(mensagem[0], hostAddress, port);
                     if (jogador != null) {
                         mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "está te esperando na porta "+mensagem[1]+".");
-                        enviarUDP(hostAddress, port, pc.enviarMensagem("06Ok"));
+                        enviarUDP(hostAddress, 20192, pc.enviarMensagem("06Ok"));
                     } else {
                         mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "não é um jogador válido.");
                     }
