@@ -639,12 +639,13 @@ public class telaJogo extends javax.swing.JFrame {
                 remoteAddr.toString().replace("/", ""));
     }
 
-    public void insereJogadorOnline(Jogador jogador) {
+    public void insereJogadorOnline(Jogador jogadorNovo) {
         // adiciona nova conexão na lista de conexões ativas
-        lstJogadoresOnline.add(jogador);
+        lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(jogadorNovo.getApelido()) && jogador.getIp().equalsIgnoreCase(jogadorNovo.getIp()) && jogador.getPort() == jogadorNovo.getPort()));
+        lstJogadoresOnline.add(jogadorNovo);
         // mostra nova conexão, sem '/' no endereço
         jogadoresOnlineJCombo.addItem(
-                jogador.getIp().replace("/", "") + ":" + jogador.getPort() + " - " + jogador.getApelido());
+                jogadorNovo.getIp().replace("/", "") + ":" + jogadorNovo.getPort() + " - " + jogadorNovo.getApelido());
     }
 
     public void removerJogadorOnline(String Apelido, String ip, int porta) {

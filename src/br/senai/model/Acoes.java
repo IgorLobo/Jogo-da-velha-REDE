@@ -34,7 +34,7 @@ public class Acoes {
         String[] mensagem;
         switch (pc.getId()) {
             case "01":
-                this.enviarUDP(hostAddress, port, pc.enviarMensagem("02" + gameConfig.getJogador1().getApelido()));
+                this.enviarUDP(hostAddress, 20192, pc.enviarMensagem("02" + gameConfig.getJogador1().getApelido()));
                 mainFrame.insereJogadorOnline(new Jogador(pc.getMensagem(), hostAddress, port));
                 mainFrame.atualizar();
                 break;
