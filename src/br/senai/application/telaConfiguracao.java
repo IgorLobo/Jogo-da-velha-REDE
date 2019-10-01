@@ -40,8 +40,6 @@ public class telaConfiguracao extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         txf_NomeJ1 = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
-        cbx_rodadas = new javax.swing.JComboBox<>();
         btn_Voltar = new javax.swing.JButton();
         btn_OK = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
@@ -63,10 +61,6 @@ public class telaConfiguracao extends javax.swing.JFrame {
                 txf_NomeJ1KeyTyped(evt);
             }
         });
-
-        jLabel4.setText("Quantidade de rodadas:");
-
-        cbx_rodadas.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "<Selecione a quantidade>", "1", "3", "5", "7", "9" }));
 
         btn_Voltar.setText("Voltar");
         btn_Voltar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -95,7 +89,6 @@ public class telaConfiguracao extends javax.swing.JFrame {
         jLabel5.setText("Simbolo do jogador 1:");
 
         dica.setIcon(new javax.swing.ImageIcon(getClass().getResource("/br/senai/images/Yoda.png"))); // NOI18N
-        dica.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -103,31 +96,28 @@ public class telaConfiguracao extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                            .addComponent(btn_Voltar)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btn_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                            .addComponent(jLabel1)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel5))
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(txf_NomeJ1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                    .addGap(112, 112, 112)
-                                    .addComponent(dica))
-                                .addGroup(jPanel1Layout.createSequentialGroup()
-                                    .addGap(37, 37, 37)
-                                    .addComponent(radX)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(radO)))))
-                    .addComponent(jLabel4)
-                    .addComponent(cbx_rodadas, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(btn_Voltar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btn_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel5))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txf_NomeJ1, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(37, 37, 37)
+                                .addComponent(radX)
+                                .addGap(18, 18, 18)
+                                .addComponent(radO))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(112, 112, 112)
+                                .addComponent(dica)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -150,11 +140,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
                     .addComponent(txf_NomeJ1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(radX)
                     .addComponent(radO))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbx_rodadas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 6, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btn_Voltar)
                     .addComponent(btn_OK, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -208,7 +194,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
                 GameConfig.getInstance().getJogador2().setSimbolo(Simbolo.X);
             }
 
-            GameConfig.getInstance().setRodadas(Integer.parseInt(cbx_rodadas.getSelectedItem().toString()));
+            GameConfig.getInstance().setRodadas(5);
             telaJogo jpJogo = new telaJogo();
             this.dispose();
             jpJogo.setVisible(true);
@@ -263,11 +249,9 @@ public class telaConfiguracao extends javax.swing.JFrame {
     private javax.swing.ButtonGroup XouO;
     private javax.swing.JButton btn_OK;
     private javax.swing.JButton btn_Voltar;
-    private javax.swing.JComboBox<String> cbx_rodadas;
     private javax.swing.JLabel dica;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton radO;
@@ -276,10 +260,7 @@ public class telaConfiguracao extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
     private boolean validarCampos() {
-        if (cbx_rodadas.getSelectedItem().equals("<Selecione a quantidade>")) {
-            JOptionPane.showMessageDialog(null, "Selecione quantas rodadas deseja!", "Atenção!", JOptionPane.ERROR_MESSAGE);
-            return false;
-        } else if (radO.isSelected() == false && radX.isSelected() == false) {
+        if (radO.isSelected() == false && radX.isSelected() == false) {
             JOptionPane.showMessageDialog(null, "Selecione qual simbolo o jogador 1 utilizará!", "Atenção", JOptionPane.ERROR_MESSAGE);
             return false;
         }
