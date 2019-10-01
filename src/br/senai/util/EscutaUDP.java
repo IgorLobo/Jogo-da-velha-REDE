@@ -56,14 +56,16 @@ public class EscutaUDP extends SwingWorker<Void, String> {
                 continue;
             }
 
-            // obtém dados
-            msg = new String(packet.getData()).trim();
-            protocolo.verificarMensagemRecebida(msg);
-            // mostra mensagem recebida
-            mainFrame.mostraMensagemRecebida(
-                    packet.getAddress().getHostAddress(),
-                    packet.getPort(), msg);
-            acoes.acaoPadraoId(protocolo, packet.getAddress().getHostAddress(),  packet.getPort());
+            if (!packet.getAddress().getHostAddress().equals(addrLocal.getHostAddress())) {
+                // obtém dados
+                msg = new String(packet.getData()).trim();
+                protocolo.verificarMensagemRecebida(msg);
+                // mostra mensagem recebida
+                mainFrame.mostraMensagemRecebida(
+                        packet.getAddress().getHostAddress(),
+                        packet.getPort(), msg);
+                acoes.acaoPadraoId(protocolo, packet.getAddress().getHostAddress(), packet.getPort());
+            }
         }
     }
 

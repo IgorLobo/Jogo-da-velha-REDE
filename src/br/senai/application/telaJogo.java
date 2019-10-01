@@ -653,7 +653,7 @@ public class telaJogo extends javax.swing.JFrame {
 
     public void removerJogadorOnline(String Apelido, String ip, int porta) {
         if (!lstJogadoresOnline.isEmpty()) {
-        lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(Apelido) && jogador.getIp().equalsIgnoreCase(ip) && jogador.getPort() == porta));
+        lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(Apelido) && jogador.getIp().equalsIgnoreCase(ip)));
         }
         jogadoresOnlineJCombo.removeAllItems();
         lstJogadoresOnline.forEach((jogador) -> {
