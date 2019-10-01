@@ -63,9 +63,9 @@ public class Acoes {
                 }
                 break;
             case "06":
-                mensagem = pc.getMensagem().split("ok");
-                
-                //String s = mensagem[1];
+                if (pc.getMensagem().substring(pc.getMensagem().length()-2).equalsIgnoreCase("Ok")) {
+                    mainFrame.mostraMensagem("A", hostAddress + ":" + port, "está te esperando na porta informada.");
+                }
                 break;
             case "07":
 
