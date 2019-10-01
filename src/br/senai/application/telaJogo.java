@@ -644,7 +644,7 @@ public class telaJogo extends javax.swing.JFrame {
         if (!lstJogadoresOnline.isEmpty()) {
             lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(jogadorNovo.getApelido()) && jogador.getIp().equalsIgnoreCase(jogadorNovo.getIp()) && jogador.getPort() == jogadorNovo.getPort()));
         }
-
+        
         lstJogadoresOnline.add(jogadorNovo);
         // mostra nova conexão, sem '/' no endereço
         jogadoresOnlineJCombo.addItem(
@@ -653,8 +653,12 @@ public class telaJogo extends javax.swing.JFrame {
 
     public void removerJogadorOnline(String Apelido, String ip, int porta) {
         if (!lstJogadoresOnline.isEmpty()) {
-            lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(Apelido) && jogador.getIp().equalsIgnoreCase(ip) && jogador.getPort() == porta));
+        lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(Apelido) && jogador.getIp().equalsIgnoreCase(ip) && jogador.getPort() == porta));
         }
+        jogadoresOnlineJCombo.removeAllItems();
+        lstJogadoresOnline.forEach((jogador) -> {
+            jogadoresOnlineJCombo.addItem(jogador.getIp().replace("/", "") + ":" + jogador.getPort() + " - " + jogador.getApelido());
+        });
     }
 
     private boolean tryParseInt(String valor) {
@@ -728,8 +732,8 @@ public class telaJogo extends javax.swing.JFrame {
         // envia mensagem
         conex.enviarMensagemTCP(msg);
     }
-
-    public Jogador obterJogador(String apelido, String ip, int porta) {
+    
+    public Jogador obterJogador(String apelido, String ip, int porta){
         for (Jogador jogador : lstJogadoresOnline) {
             if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ip) && jogador.getPort() == porta) {
                 return jogador;
