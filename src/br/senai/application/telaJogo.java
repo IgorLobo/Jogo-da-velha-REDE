@@ -735,7 +735,7 @@ public class telaJogo extends javax.swing.JFrame {
     
     public Jogador obterJogador(String apelido, String ip, int porta){
         for (Jogador jogador : lstJogadoresOnline) {
-            if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ip) && jogador.getPort() == porta) {
+            if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ip)) {
                 return jogador;
             }
         }
