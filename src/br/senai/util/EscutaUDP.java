@@ -64,6 +64,7 @@ public class EscutaUDP extends SwingWorker<Void, String> {
                 mainFrame.mostraMensagemRecebida(
                         packet.getAddress().getHostAddress(),
                         packet.getPort(), msg);
+                
                 acoes.acaoPadraoId(protocolo, packet.getAddress().getHostAddress(), packet.getPort());
             }
         }
