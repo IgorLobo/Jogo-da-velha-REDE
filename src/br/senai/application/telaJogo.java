@@ -493,6 +493,7 @@ public class telaJogo extends javax.swing.JFrame {
         msg += conteudo;
 
         ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
+        lstMensagens.ensureIndexIsVisible(lstMensagens.getModel().getSize()-1);
     }
 
     public void mostraMensagemRecebida(String endereco, String conteudo) {

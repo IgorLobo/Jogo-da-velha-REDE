@@ -86,38 +86,27 @@ public class Acoes {
                 mainFrame.atualizar();
                 break;
             case "08":
-                switch (pc.getPosicao()) {
-                    case "01":
-                        mainFrame.M7.doClick();
-                        break;
-                    case "02":
-                        mainFrame.M8.doClick();
-                        break;
-                    case "03":
-                        mainFrame.M9.doClick();
-                        break;
-                    case "04":
-                        mainFrame.M4.doClick();
-                        break;
-                    case "05":
-                        mainFrame.M5.doClick();
-                        break;
-                    case "06":
-                        mainFrame.M6.doClick();
-                        break;
-                    case "07":
-                        mainFrame.M1.doClick();
-                        break;
-                    case "08":
-                        mainFrame.M2.doClick();
-                        break;
-                    case "09":
-                        mainFrame.M3.doClick();
-                        break;
-                    default:
-                        break;
+                if (pc.getPosicao().equalsIgnoreCase("1")) {
+                    mainFrame.M7.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("2")) {
+                    mainFrame.M8.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("3")) {
+                    mainFrame.M9.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("4")) {
+                    mainFrame.M4.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("5")) {
+                    mainFrame.M5.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("6")) {
+                    mainFrame.M6.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("7")) {
+                    mainFrame.M1.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("8")) {
+                    mainFrame.M2.doClick();
+                } else if (pc.getPosicao().equalsIgnoreCase("9")) {
+                    mainFrame.M3.doClick();
                 }
                 break;
+
             case "09":
 
                 break;
