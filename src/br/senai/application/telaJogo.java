@@ -680,8 +680,9 @@ public class telaJogo extends javax.swing.JFrame {
     }
 
     public Jogador obterJogador(String apelido, String ip) {
-        for (Jogador jogador : lstJogadoresOnline) {
-            if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ip)) {
+        String [] apel = apelido.split(":");
+        for (Jogador jogador : lstJogadoresOnline) {            
+            if (jogador.getApelido().equalsIgnoreCase(apel[0]) && jogador.getIp().equalsIgnoreCase(ip)) {
                 return jogador;
             }
         }
