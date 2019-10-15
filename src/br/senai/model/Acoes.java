@@ -57,10 +57,10 @@ public class Acoes {
                 }
                 break;
             case "05":
-                mensagem = pc.getMensagem().split("|");
+                mensagem = pc.getMensagem().split("\\|");
                 Jogador jogador;
                 if (Integer.parseInt(mensagem[1]) != 0) {
-                    jogador = mainFrame.obterJogador(mensagem[0], hostAddress);
+                    jogador = mainFrame.obterJogador(hostAddress, mensagem[0]);
                     if (jogador != null) {
                         mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "está te esperando na porta " + mensagem[1] + ".");
                         enviarUDP(hostAddress, 20192, "06007Ok");

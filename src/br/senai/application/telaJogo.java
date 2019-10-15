@@ -679,10 +679,10 @@ public class telaJogo extends javax.swing.JFrame {
         conex.enviarMensagemTCP(msg);
     }
 
-    public Jogador obterJogador(String apelido, String ip) {
-        String [] apel = apelido.split(":");
+    public Jogador obterJogador(String ip, String apelido) {
+        String [] ipp = ip.split(":");
         for (Jogador jogador : lstJogadoresOnline) {            
-            if (jogador.getApelido().equalsIgnoreCase(apel[0]) && jogador.getIp().equalsIgnoreCase(ip)) {
+            if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ipp[0])) {
                 return jogador;
             }
         }
