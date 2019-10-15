@@ -63,6 +63,7 @@ public class Acoes {
                     jogador = mainFrame.obterJogador(hostAddress, mensagem[0]);
                     if (jogador != null) {
                         mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "está te esperando na porta " + mensagem[1] + ".");
+                        gameConfig.getJogador2().setApelido(mensagem[0]);
                         enviarUDP(hostAddress, 20192, "06007Ok");
                         mainFrame.conectaComServidor(hostAddress, Integer.parseInt(mensagem[1]));
                     } else {
@@ -83,6 +84,8 @@ public class Acoes {
                 } else {
                     mainFrame.setSimboloDaVez(Simbolo.X);
                 }
+                mainFrame.setButtonEnable(true);
+                JOptionPane.showMessageDialog(null, "Que os jogos comecem!");
                 mainFrame.atualizar();
                 break;
             case "08":

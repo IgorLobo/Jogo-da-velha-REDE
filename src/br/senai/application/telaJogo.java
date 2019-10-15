@@ -136,6 +136,15 @@ public class telaJogo extends javax.swing.JFrame {
 
     public void iniciarCampos() {
         acoes = new Acoes(this);
+        M1.setEnabled(false);
+        M2.setEnabled(false);
+        M3.setEnabled(false);
+        M4.setEnabled(false);
+        M5.setEnabled(false);
+        M6.setEnabled(false);
+        M7.setEnabled(false);
+        M8.setEnabled(false);
+        M9.setEnabled(false);
         JL_J1.setText(GameConfig.getInstance().getJogador1().getApelido() + ":");
         JL_J2.setText(GameConfig.getInstance().getJogador2().getApelido() + ":");
         simboloDaVez = GameConfig.getInstance().getJogador1().getSimbolo();
@@ -334,7 +343,8 @@ public class telaJogo extends javax.swing.JFrame {
     public void atualizar() {
         JL_jogadas.setText(Integer.toString(jogadas));
         JL_Rodada.setText(Integer.toString(rodadas));
-
+        JL_J2.setText(GameConfig.getInstance().getJogador2().getApelido());
+        JL_J1.setText(GameConfig.getInstance().getJogador1().getApelido());
         JL_pontosJ1.setText(Integer.toString(GameConfig.getInstance().getJogador1().getPontos()));
         JL_vitoriasJ1.setText(Integer.toString(GameConfig.getInstance().getJogador1().getVitorias()));
         JL_pontosJ2.setText(Integer.toString(GameConfig.getInstance().getJogador2().getPontos()));
@@ -493,7 +503,7 @@ public class telaJogo extends javax.swing.JFrame {
         msg += conteudo;
 
         ((DefaultListModel) lstMensagens.getModel()).addElement(msg);
-        lstMensagens.ensureIndexIsVisible(lstMensagens.getModel().getSize()-1);
+        lstMensagens.ensureIndexIsVisible(lstMensagens.getModel().getSize() - 1);
     }
 
     public void mostraMensagemRecebida(String endereco, String conteudo) {
@@ -681,8 +691,8 @@ public class telaJogo extends javax.swing.JFrame {
     }
 
     public Jogador obterJogador(String ip, String apelido) {
-        String [] ipp = ip.split(":");
-        for (Jogador jogador : lstJogadoresOnline) {            
+        String[] ipp = ip.split(":");
+        for (Jogador jogador : lstJogadoresOnline) {
             if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ipp[0])) {
                 return jogador;
             }
@@ -1527,7 +1537,21 @@ public class telaJogo extends javax.swing.JFrame {
 
     private void btnIniciarJogoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarJogoActionPerformed
         enviarTCP("070061");
+        setButtonEnable(true);
+
     }//GEN-LAST:event_btnIniciarJogoActionPerformed
+
+    public void setButtonEnable(boolean bool) {
+        M1.setEnabled(bool);
+        M2.setEnabled(bool);
+        M3.setEnabled(bool);
+        M4.setEnabled(bool);
+        M5.setEnabled(bool);
+        M6.setEnabled(bool);
+        M7.setEnabled(bool);
+        M8.setEnabled(bool);
+        M9.setEnabled(bool);
+    }
 
     private void btnDesistirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesistirActionPerformed
         enviarTCP("10005");
