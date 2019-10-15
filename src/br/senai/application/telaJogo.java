@@ -74,7 +74,7 @@ public class telaJogo extends javax.swing.JFrame {
     private Simbolo simboloDaVez = null;
     private boolean statusJogo = false;
     private ProtocoloComunicacao protocol = new ProtocoloComunicacao();
-    private Acoes acoes = new Acoes();
+    private Acoes acoes;
 
     public telaJogo() {
         initComponents();
@@ -135,7 +135,7 @@ public class telaJogo extends javax.swing.JFrame {
     }  
     
     public void iniciarCampos() {
-
+        acoes = new Acoes(this);
         JL_J1.setText(GameConfig.getInstance().getJogador1().getApelido() + ":");
         JL_J2.setText(GameConfig.getInstance().getJogador2().getApelido() + ":");
         simboloDaVez = GameConfig.getInstance().getJogador1().getSimbolo();
@@ -406,6 +406,7 @@ public class telaJogo extends javax.swing.JFrame {
             udpEscutaThread = new EscutaUDP(this, porta, addrLocal);
             mostraMensagem("", "", 0,
                     "Escutando porta " + txtRecebePorta.getText());
+            //acoes.enviarUDP("255.255.255.255", 20192, protocol.enviarMensagem("01" + GameConfig.getInstance().getJogador1().getApelido()));
         } catch (SocketException ex) {
             JOptionPane.showMessageDialog(null,
                     "Erro na criação do thread de leitura da porta " + porta
@@ -605,7 +606,7 @@ public class telaJogo extends javax.swing.JFrame {
     public void insereJogadorOnline(Jogador jogadorNovo) {
         // adiciona nova conexão na lista de conexões ativas
         if (!lstJogadoresOnline.isEmpty()) {
-            lstJogadoresOnline.removeIf(jogador -> (jogador.getApelido().equalsIgnoreCase(jogadorNovo.getApelido()) && jogador.getIp().equalsIgnoreCase(jogadorNovo.getIp()) && jogador.getPort() == jogadorNovo.getPort()));
+            lstJogadoresOnline.removeIf(jogador -> (jogador.getIp().equalsIgnoreCase(jogadorNovo.getIp())));
         }
 
         lstJogadoresOnline.add(jogadorNovo);
@@ -1489,8 +1490,8 @@ public class telaJogo extends javax.swing.JFrame {
             mostraMensagem("", "", 0,
                     "Escutando porta " + txtRecebePorta.getText());
         } else {
+            escutaPortaUDP(); 
             verificarOnline();
-            escutaPortaUDP();
         }
     }//GEN-LAST:event_btnEscutarActionPerformed
 

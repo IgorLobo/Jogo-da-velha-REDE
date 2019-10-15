@@ -42,6 +42,7 @@ public class EscutaUDP extends SwingWorker<Void, String> {
         String msg;
         ProtocoloComunicacao protocolo = new ProtocoloComunicacao();
         Acoes acoes = new Acoes(mainFrame);
+        //mainFrame.verificarOnline(); 
         while (true) {
             byte[] buf = new byte[256];
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
