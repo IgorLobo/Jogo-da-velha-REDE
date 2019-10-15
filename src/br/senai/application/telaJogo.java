@@ -557,11 +557,11 @@ public class telaJogo extends javax.swing.JFrame {
             return null;
         }
 
-        String str = interfacesJCombo.getItemAt(index);
+        String str = jogadoresOnlineJCombo.getItemAt(index);
         String[] strParts = str.split(" - ");
         Jogador jogador;
         try {
-            jogador = obterJogador(strParts[0], strParts[1], 20192);
+            jogador = obterJogador(strParts[0], strParts[1]);
         } catch (Exception ex) {
             return null;
         }
@@ -679,7 +679,7 @@ public class telaJogo extends javax.swing.JFrame {
         conex.enviarMensagemTCP(msg);
     }
 
-    public Jogador obterJogador(String apelido, String ip, int porta) {
+    public Jogador obterJogador(String apelido, String ip) {
         for (Jogador jogador : lstJogadoresOnline) {
             if (jogador.getApelido().equalsIgnoreCase(apelido) && jogador.getIp().equalsIgnoreCase(ip)) {
                 return jogador;
