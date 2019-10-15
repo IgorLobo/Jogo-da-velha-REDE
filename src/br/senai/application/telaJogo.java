@@ -132,8 +132,8 @@ public class telaJogo extends javax.swing.JFrame {
 
     public void setSimboloDaVez(Simbolo simboloDaVez) {
         this.simboloDaVez = simboloDaVez;
-    }  
-    
+    }
+
     public void iniciarCampos() {
         acoes = new Acoes(this);
         JL_J1.setText(GameConfig.getInstance().getJogador1().getApelido() + ":");
@@ -361,7 +361,7 @@ public class telaJogo extends javax.swing.JFrame {
 
     public void verificarOnline() {
         int delay = 5000;   // delay de 5 seg.
-        int interval = 180000;  // intervalo de 1 seg.
+        int interval = 20000;  // intervalo de 1 seg.
         Timer timer = new Timer();
 
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -611,8 +611,12 @@ public class telaJogo extends javax.swing.JFrame {
 
         lstJogadoresOnline.add(jogadorNovo);
         // mostra nova conexão, sem '/' no endereço
-        jogadoresOnlineJCombo.addItem(
-                jogadorNovo.getIp().replace("/", "") + ":" + jogadorNovo.getPort() + " - " + jogadorNovo.getApelido());
+        jogadoresOnlineJCombo.removeAllItems();
+        for (Jogador jogador : lstJogadoresOnline) {
+            jogadoresOnlineJCombo.addItem(
+                    jogador.getIp().replace("/", "") + ":" + jogador.getPort() + " - " + jogador.getApelido());
+
+        }
     }
 
     public void removerJogadorOnline(String Apelido, String ip, int porta) {
@@ -1490,7 +1494,7 @@ public class telaJogo extends javax.swing.JFrame {
             mostraMensagem("", "", 0,
                     "Escutando porta " + txtRecebePorta.getText());
         } else {
-            escutaPortaUDP(); 
+            escutaPortaUDP();
             verificarOnline();
         }
     }//GEN-LAST:event_btnEscutarActionPerformed
