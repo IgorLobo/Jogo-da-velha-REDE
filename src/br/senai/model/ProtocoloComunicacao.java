@@ -9,6 +9,7 @@ public class ProtocoloComunicacao {
     private String id;
     private int tamanho;
     private String mensagem;
+    private String posicao;
 
     public ProtocoloComunicacao() {
     }
@@ -42,8 +43,28 @@ public class ProtocoloComunicacao {
         this.mensagem = mensagem;
     }
 
+    public String getPosicao() {
+        return posicao;
+    }
+
+    public void setPosicao(String posicao) {
+        this.posicao = posicao;
+    } 
+    
     public String verificarMensagemRecebida(String msg) {
         decifrarMensagem(msg);
         return id;
-    }   
+    }
+
+    public String verificarMensagemRecebidaTCP(String msg) {
+        decifrarMensagemTCP(msg);
+        return id;
+    }
+
+    private void decifrarMensagemTCP(String msg) {
+        char[] decifrado = msg.toCharArray();
+        id = String.copyValueOf(decifrado, 0, 2);
+        tamanho = Integer.parseInt(String.copyValueOf(decifrado, 2, 3));
+        this.posicao = String.copyValueOf(decifrado, 5, msg.length() - 5);
+    }
 }

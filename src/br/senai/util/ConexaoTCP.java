@@ -6,7 +6,9 @@
 package br.senai.util;
 
 import br.senai.application.telaJogo;
+import br.senai.model.Acoes;
 import br.senai.model.Jogador;
+import br.senai.model.ProtocoloComunicacao;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -58,6 +60,8 @@ public class ConexaoTCP extends SwingWorker<Boolean, String> {
     @Override
     protected Boolean doInBackground() throws Exception {
         String msg;
+        ProtocoloComunicacao protocolo = new ProtocoloComunicacao();
+        Acoes acoes = new Acoes(mainFrame);
         while (true) {
             try {
                 msg = (String) bfr.readLine();
@@ -68,9 +72,10 @@ public class ConexaoTCP extends SwingWorker<Boolean, String> {
                     // elimina '/' no endereço
                     addr = addr.replace("/", "");
                     
-                    
+                    protocolo.verificarMensagemRecebida(msg);
                     // mostra mensagem recebida
                     mainFrame.mostraMensagemRecebida(addr, msg);
+                    acoes.acaoPadraoId(protocolo, addr, socket.getPort());
 
                 } else {
                     // encerra atributos de comunicação

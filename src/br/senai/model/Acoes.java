@@ -48,40 +48,88 @@ public class Acoes {
                 break;
             case "04":
                 mainFrame.mostraMensagem("R", hostAddress + ":" + port + " - " + pc.getMensagem(), "está te convidando para uma partida.");
+                if (JOptionPane.showConfirmDialog(null, "Deseja aceitar o convite?", "WARNING",
+                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    enviarUDP(hostAddress, 20192, String.format("05%03d%s|%s", gameConfig.getJogador1().getApelido().length() + 5, gameConfig.getJogador1().getApelido(), "18192"));
+                    mainFrame.esperarConexaoTCP();
+                } else {
+                    enviarUDP(hostAddress, 20192, String.format("05%03d%s|%s", gameConfig.getJogador1().getApelido().length() + 1, gameConfig.getJogador1().getApelido(), "0"));
+                }
                 break;
             case "05":
-                mensagem = pc.getMensagem().split(";");
+                mensagem = pc.getMensagem().split("|");
                 Jogador jogador;
                 if (Integer.parseInt(mensagem[1]) != 0) {
                     jogador = mainFrame.obterJogador(mensagem[0], hostAddress, port);
                     if (jogador != null) {
-                        mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "está te esperando na porta "+mensagem[1]+".");
-                        enviarUDP(hostAddress, 20192, pc.enviarMensagem("06Ok"));
+                        mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "está te esperando na porta " + mensagem[1] + ".");
+                        enviarUDP(hostAddress, 20192, "06007Ok");
+                        mainFrame.conectaComServidor(hostAddress, Integer.parseInt(mensagem[1]));
                     } else {
                         mainFrame.mostraMensagem("A", hostAddress + ":" + port + " - " + mensagem[0], "não é um jogador válido.");
                     }
                 }
                 break;
             case "06":
-                if (pc.getMensagem().substring(pc.getMensagem().length()-2).equalsIgnoreCase("Ok")) {
+                if (pc.getMensagem().substring(pc.getMensagem().length() - 2).equalsIgnoreCase("Ok")) {
                     mainFrame.mostraMensagem("A", hostAddress + ":" + port, "está te esperando na porta informada.");
                 }
                 break;
             case "07":
-
+                gameConfig.getJogador2().setSimbolo(Simbolo.O);
+                gameConfig.getJogador1().setSimbolo(Simbolo.X);
+                if (pc.getPosicao().equals("1")) {
+                    mainFrame.setSimboloDaVez(Simbolo.O);
+                } else {
+                    mainFrame.setSimboloDaVez(Simbolo.X);
+                }
+                mainFrame.atualizar();
                 break;
             case "08":
-
+                switch (pc.getPosicao()) {
+                    case "01":
+                        mainFrame.M7.doClick();
+                        break;
+                    case "02":
+                        mainFrame.M8.doClick();
+                        break;
+                    case "03":
+                        mainFrame.M9.doClick();
+                        break;
+                    case "04":
+                        mainFrame.M4.doClick();
+                        break;
+                    case "05":
+                        mainFrame.M5.doClick();
+                        break;
+                    case "06":
+                        mainFrame.M6.doClick();
+                        break;
+                    case "07":
+                        mainFrame.M1.doClick();
+                        break;
+                    case "08":
+                        mainFrame.M2.doClick();
+                        break;
+                    case "09":
+                        mainFrame.M3.doClick();
+                        break;
+                    default:
+                        break;
+                }
                 break;
             case "09":
 
+                break;
+            case "10":
+                mainFrame.desconectar();
                 break;
             default:
                 break;
         }
     }
 
-    private void enviarUDP(String ipDestino, int portaDestino, String msg) {
+    public void enviarUDP(String ipDestino, int portaDestino, String msg) {
         try {
             // cria endereço para enviar mensagem
             InetAddress addr = InetAddress.getByName(ipDestino);
